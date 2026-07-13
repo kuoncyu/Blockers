@@ -739,6 +739,7 @@ function renderSetup(){
       <div class="topbtns">
         <button class="ibtn" data-act="music" ${(musicMissing.lobby && musicMissing.game)?'title="找不到 lobby.mp3 / game.mp3"':''}>${musicOn?'🎵 音樂':'🔇 音樂關'}</button>
         <button class="ibtn" data-act="sound">${sfxOn?'🔊 音效':'🔇 音效關'}</button>
+        <button class="ibtn" data-act="fullscreen">${document.fullscreenElement ? '⛶ 退出全螢幕' : '⛶ 全螢幕'}</button>
       </div>
     </div>
     <div class="setup-wrap">
@@ -799,8 +800,10 @@ function renderSetup(){
   });
   app.querySelector('[data-act="music"]').addEventListener('click', ()=>{ musicOn=!musicOn; syncMusic(true); render(); });
   app.querySelector('[data-act="sound"]').addEventListener('click', ()=>{ sfxOn=!sfxOn; render(); sfxUI(); });
+  app.querySelector('[data-act="fullscreen"]').addEventListener('click', ()=>{ sfxUI(); toggleFullscreen(); });
   app.querySelector('[data-act="start"]').addEventListener('click', ()=>{
     sfxUI();
+    enterFullscreen();
     state = newGameState(setupCfg);
     render();
     maybeRunAI();
@@ -908,7 +911,7 @@ function renderGame(showEnd){
       <div class="topbtns">
         <button class="ibtn" data-act="music" ${(musicMissing.lobby && musicMissing.game)?'title="找不到 lobby.mp3 / game.mp3"':''}>${musicOn?'🎵 音樂':'🔇 音樂關'}</button>
         <button class="ibtn" data-act="sound">${sfxOn?'🔊 音效':'🔇 音效關'}</button>
-        <button class="ibtn" data-act="fullscreen">⛶ 全螢幕</button>
+        <button class="ibtn" data-act="fullscreen">${document.fullscreenElement ? '⛶ 退出全螢幕' : '⛶ 全螢幕'}</button>
         <button class="ibtn" data-act="restart">↺ 重新設置</button>
       </div>
     </div>
@@ -971,6 +974,10 @@ function toggleFullscreen(){
   if(!document.fullscreenElement){ document.documentElement.requestFullscreen().catch(()=>{}); }
   else{ document.exitFullscreen().catch(()=>{}); }
 }
+// 進入對局時自動嘗試全螢幕（需在使用者互動事件中呼叫，如按鈕 click，才不會被瀏覽器擋下）
+function enterFullscreen(){
+  if(!document.fullscreenElement){ document.documentElement.requestFullscreen().catch(()=>{}); }
+}
 
 function renderEndModal(){
   const gs = state;
@@ -1003,6 +1010,7 @@ function renderEndModal(){
   document.body.appendChild(div);
   div.querySelector('[data-act="again"]').addEventListener('click', ()=>{
     sfxUI();
+    enterFullscreen();
     document.body.removeChild(div);
     state = newGameState(setupCfg);
     render();
@@ -1062,6 +1070,8 @@ document.addEventListener('click', function(ev){
     setTimeout(maybeRunAI, 380);
   }
 }, true);
+
+document.addEventListener('fullscreenchange', ()=>{ render(); });
 
 render();
 })();
