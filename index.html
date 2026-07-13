@@ -63,13 +63,39 @@
   }
   .brand h1{font-family:'Noto Serif TC',serif; font-size:20px; margin:0; letter-spacing:.06em; font-weight:900;}
   .brand .tag{font-size:11px; color:var(--ink-faint); letter-spacing:.18em; margin-top:1px;}
-  .topbtns{display:flex; gap:8px;}
+  .topbtns{display:flex; gap:8px; align-items:center;}
   .ibtn{
     border:1px solid var(--line); background:var(--panel-2); color:var(--ink-dim);
     padding:8px 12px; border-radius:8px; cursor:pointer; font-size:13px;
     display:flex; align-items:center; gap:6px; transition:.15s;
   }
   .ibtn:hover{border-color:var(--gold); color:var(--ink); background:var(--panel-3);}
+  .ibtn.icon-only{
+    width:38px; height:38px; padding:0; justify-content:center; font-size:16px; flex:none;
+  }
+  .audio-ctrl{
+    display:flex; align-items:center; background:var(--panel-2);
+    border:1px solid var(--line); border-radius:8px; overflow:hidden;
+  }
+  .audio-ctrl .ibtn{border:none; background:transparent;}
+  .audio-ctrl .ibtn:hover{background:var(--panel-3);}
+  .vol-popover{
+    max-width:0; opacity:0; overflow:hidden; padding:0;
+    transition: max-width .2s ease, opacity .15s ease, padding .2s ease;
+    display:flex; align-items:center;
+  }
+  .vol-popover.open{ max-width:90px; opacity:1; padding:0 12px 0 2px; }
+  .vol-slider{
+    -webkit-appearance:none; appearance:none; width:64px; height:4px; border-radius:2px;
+    background:var(--line); outline:none; cursor:pointer; accent-color:var(--gold); flex:none;
+  }
+  .vol-slider::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none; width:12px; height:12px; border-radius:50%;
+    background:var(--gold-bright); cursor:pointer; box-shadow:0 0 0 2px rgba(0,0,0,.3);
+  }
+  .vol-slider::-moz-range-thumb{
+    width:12px; height:12px; border-radius:50%; background:var(--gold-bright); border:none; cursor:pointer;
+  }
 
   /* ---------- Setup screen ---------- */
   .setup-wrap{flex:1; display:flex; align-items:center; justify-content:center; padding:32px 16px;}
@@ -581,6 +607,13 @@ function applyMove(gs, playerId, tileIdx, r, c){
   gs.log.push(msg);
   if(gs.log.length>60) gs.log.shift();
 
+  // 遊戲結束條件：當「所有」玩家手牌都剩下 4 張（含）以下時，立即結束對局
+  const HAND_END_THRESHOLD = 4;
+  if(gs.players.every(p=>p.rack.length<=HAND_END_THRESHOLD)){
+    finishGame(gs);
+    return;
+  }
+
   advanceTurn(gs);
 }
 
@@ -612,6 +645,8 @@ function finishGame(gs){
 
 /* ===================== 音效（純程式碼生成，無需外部檔案） ===================== */
 let actx=null;
+let sfxOn = true;
+let sfxVolume = 0.8; // 0~1，可由介面滑桿調整
 function beep(freq=440, dur=0.09, type='sine', vol=0.05, delay=0){
   try{
     if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
@@ -619,16 +654,16 @@ function beep(freq=440, dur=0.09, type='sine', vol=0.05, delay=0){
     const t0 = actx.currentTime + delay;
     const o = actx.createOscillator();
     const g = actx.createGain();
+    const v = Math.max(0.0001, vol * sfxVolume);
     o.type=type; o.frequency.setValueAtTime(freq, t0);
     g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(vol, t0+0.012);
+    g.gain.exponentialRampToValueAtTime(v, t0+0.012);
     o.connect(g); g.connect(actx.destination);
     o.start(t0);
     g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
     o.stop(t0+dur+0.03);
   }catch(e){}
 }
-let sfxOn = true;
 
 // 落子：清脆單音
 function sfxPlace(){ if(sfxOn) beep(560,0.07,'triangle',0.05); }
@@ -664,12 +699,83 @@ function sfxGameOver(){ if(sfxOn){ [392,330].forEach((f,i)=>beep(f,0.22,'sine',0
    找不到檔案時會自動靜默略過，不影響遊戲運作。 */
 const lobbyMusic = new Audio('lobby.mp3');
 const gameMusic  = new Audio('game.mp3');
-[lobbyMusic, gameMusic].forEach(a=>{ a.loop = true; a.volume = 0.38; a.preload = 'auto'; });
+let musicVolume = 0.38; // 0~1，可由介面滑桿調整
+[lobbyMusic, gameMusic].forEach(a=>{ a.loop = true; a.volume = musicVolume; a.preload = 'auto'; });
 
 let musicOn = true;
 let musicMissing = { lobby:false, game:false };
 lobbyMusic.addEventListener('error', ()=>{ musicMissing.lobby = true; });
 gameMusic.addEventListener('error', ()=>{ musicMissing.game = true; });
+
+function applyMusicVolume(){
+  lobbyMusic.volume = musicVolume;
+  gameMusic.volume = musicVolume;
+}
+
+/* ---- 共用的音樂／音效／全螢幕控制列（點圖示才展開音量滑桿） ---- */
+let musicPanelOpen = false;
+let sfxPanelOpen = false;
+
+function topBtnsHtml(){
+  return `
+    <div class="audio-ctrl">
+      <button class="ibtn icon-only" data-act="music" title="${musicOn?'關閉音樂':'開啟音樂'}${(musicMissing.lobby && musicMissing.game)?'（找不到 lobby.mp3 / game.mp3）':''}">${musicOn?'🎵':'🔇'}</button>
+      <div class="vol-popover ${musicPanelOpen?'open':''}">
+        <input type="range" class="vol-slider" data-act="musicVol" min="0" max="100" value="${Math.round(musicVolume*100)}" title="音樂音量">
+      </div>
+    </div>
+    <div class="audio-ctrl">
+      <button class="ibtn icon-only" data-act="sound" title="${sfxOn?'關閉音效':'開啟音效'}">${sfxOn?'🔊':'🔇'}</button>
+      <div class="vol-popover ${sfxPanelOpen?'open':''}">
+        <input type="range" class="vol-slider" data-act="sfxVol" min="0" max="100" value="${Math.round(sfxVolume*100)}" title="音效音量">
+      </div>
+    </div>
+    <button class="ibtn icon-only" data-act="fullscreen" title="${document.fullscreenElement?'退出全螢幕':'全螢幕'}">⛶</button>
+  `;
+}
+function wireTopBtns(container){
+  const musicBtn = container.querySelector('[data-act="music"]');
+  const sfxBtn = container.querySelector('[data-act="sound"]');
+
+  // 點圖示：展開／收合音量調整鈕（不直接靜音）
+  musicBtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    musicPanelOpen = !musicPanelOpen;
+    sfxPanelOpen = false;
+    sfxUI();
+    render();
+  });
+  sfxBtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    sfxPanelOpen = !sfxPanelOpen;
+    musicPanelOpen = false;
+    render();
+    sfxUI();
+  });
+  container.querySelector('[data-act="fullscreen"]').addEventListener('click', ()=>{ sfxUI(); toggleFullscreen(); });
+
+  // 拉到 0 ＝靜音，大於 0 ＝取消靜音；拖曳過程中不整頁重繪，避免滑桿被中斷
+  container.querySelector('[data-act="musicVol"]').addEventListener('input', (e)=>{
+    musicVolume = parseInt(e.target.value,10)/100;
+    musicOn = musicVolume>0;
+    applyMusicVolume();
+    syncMusic(true);
+    musicBtn.textContent = musicOn?'🎵':'🔇';
+  });
+  container.querySelector('[data-act="sfxVol"]').addEventListener('input', (e)=>{
+    sfxVolume = parseInt(e.target.value,10)/100;
+    sfxOn = sfxVolume>0;
+    sfxBtn.textContent = sfxOn?'🔊':'🔇';
+  });
+  container.querySelector('[data-act="sfxVol"]').addEventListener('change', ()=>{ if(sfxOn) sfxUI(); });
+}
+// 點擊面板以外的地方時，自動收合音量調整鈕
+document.addEventListener('click', (e)=>{
+  if(!musicPanelOpen && !sfxPanelOpen) return;
+  if(e.target.closest && e.target.closest('.audio-ctrl')) return;
+  musicPanelOpen = false; sfxPanelOpen = false;
+  render();
+});
 
 let activeMusicTrack = null; // 'lobby' | 'game' | null
 function syncMusic(force){
@@ -736,11 +842,7 @@ function renderSetup(){
   app.innerHTML = `
     <div class="topbar">
       <div class="brand"><div class="mark">爆</div><div><h1>大爆格</h1><div class="tag">CONNECT · CAPTURE · CONTROL</div></div></div>
-      <div class="topbtns">
-        <button class="ibtn" data-act="music" ${(musicMissing.lobby && musicMissing.game)?'title="找不到 lobby.mp3 / game.mp3"':''}>${musicOn?'🎵 音樂':'🔇 音樂關'}</button>
-        <button class="ibtn" data-act="sound">${sfxOn?'🔊 音效':'🔇 音效關'}</button>
-        <button class="ibtn" data-act="fullscreen">${document.fullscreenElement ? '⛶ 退出全螢幕' : '⛶ 全螢幕'}</button>
-      </div>
+      <div class="topbtns">${topBtnsHtml()}</div>
     </div>
     <div class="setup-wrap">
       <div class="setup-card">
@@ -770,7 +872,7 @@ function renderSetup(){
           <b>方塊：</b>每人持有橫排、直列、區域符號方塊各 9 個，加上百搭方塊 1 個，共 28 個。<br>
           <b>回合：</b>從手上 5 個方塊中選 1 個，依規則放入對應格子（橫排方塊只能放在該橫排、直列方塊只能放在該直列、符號方塊只能放在對應區域、百搭可放任意格），然後補牌。<br>
           <b>奪取：</b>可用合法方塊取代對手方塊，但前提是移除後不會把對方原本相連的一整群拆成兩群以上。<br>
-          <b>結束：</b>牌庫與手牌耗盡後結算，總分最少者獲勝；平手則比較奪取總數，越少越好。
+          <b>結束：</b>當所有玩家手牌都剩下 4 張（含）以下時，對局立即結束並結算；總分最少者獲勝，平手則比較奪取總數，越少越好。
         </div>
       </div>
     </div>
@@ -798,9 +900,7 @@ function renderSetup(){
     box.classList.toggle('show');
     rt.textContent = box.classList.contains('show') ? '收合規則說明' : '展開規則說明';
   });
-  app.querySelector('[data-act="music"]').addEventListener('click', ()=>{ musicOn=!musicOn; syncMusic(true); render(); });
-  app.querySelector('[data-act="sound"]').addEventListener('click', ()=>{ sfxOn=!sfxOn; render(); sfxUI(); });
-  app.querySelector('[data-act="fullscreen"]').addEventListener('click', ()=>{ sfxUI(); toggleFullscreen(); });
+  wireTopBtns(app);
   app.querySelector('[data-act="start"]').addEventListener('click', ()=>{
     sfxUI();
     enterFullscreen();
@@ -909,9 +1009,7 @@ function renderGame(showEnd){
     <div class="topbar">
       <div class="brand"><div class="mark">爆</div><div><h1>大爆格</h1><div class="tag">CONNECT · CAPTURE · CONTROL</div></div></div>
       <div class="topbtns">
-        <button class="ibtn" data-act="music" ${(musicMissing.lobby && musicMissing.game)?'title="找不到 lobby.mp3 / game.mp3"':''}>${musicOn?'🎵 音樂':'🔇 音樂關'}</button>
-        <button class="ibtn" data-act="sound">${sfxOn?'🔊 音效':'🔇 音效關'}</button>
-        <button class="ibtn" data-act="fullscreen">${document.fullscreenElement ? '⛶ 退出全螢幕' : '⛶ 全螢幕'}</button>
+        ${topBtnsHtml()}
         <button class="ibtn" data-act="restart">↺ 重新設置</button>
       </div>
     </div>
@@ -961,9 +1059,7 @@ function renderGame(showEnd){
     });
   });
 
-  app.querySelector('[data-act="music"]').addEventListener('click', ()=>{ musicOn=!musicOn; syncMusic(true); render(); });
-  app.querySelector('[data-act="sound"]').addEventListener('click', ()=>{ sfxOn=!sfxOn; render(); sfxUI(); });
-  app.querySelector('[data-act="fullscreen"]').addEventListener('click', ()=>{ sfxUI(); toggleFullscreen(); });
+  wireTopBtns(app);
   app.querySelector('[data-act="restart"]').addEventListener('click', ()=>{ sfxUI(); state=null; render(); });
 
   if(gs.finished){ renderEndModal(); }
