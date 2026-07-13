@@ -1,0 +1,1070 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>大爆格｜連格棋局</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12161a;
+    --bg-2:#0d1013;
+    --panel:#1b2227;
+    --panel-2:#212a30;
+    --panel-3:#262f36;
+    --line:#34424a;
+    --line-soft:#2a343b;
+    --ink:#ece7da;
+    --ink-dim:#9aa7ac;
+    --ink-faint:#5c6b71;
+    --gold:#cf9f3f;
+    --gold-bright:#e8bd5c;
+    --jade:#3f9077;
+    --vermillion:#c1462f;
+    --p0:#c74b3d;   /* 硃紅 */
+    --p1:#3f7fb0;   /* 靛藍 */
+    --p2:#d1a13a;   /* 琥珀 */
+    --p3:#4a9772;   /* 松綠 */
+    --p4:#8d6bb5;   /* 紫丁 */
+    --shadow: 0 10px 30px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 700px at 12% -10%, #1a2128 0%, transparent 60%),
+      radial-gradient(1000px 700px at 110% 10%, #1a1f24 0%, transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'Noto Sans TC', system-ui, sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'Space Mono', monospace;}
+  .serif{font-family:'Noto Serif TC', serif;}
+  #app{min-height:100vh; display:flex; flex-direction:column;}
+  a,button{font-family:inherit;}
+  ::selection{background:var(--gold); color:#1a1a1a;}
+
+  /* ---------- Top chrome ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 22px; border-bottom:1px solid var(--line-soft);
+    background:linear-gradient(180deg, rgba(255,255,255,.02), transparent);
+  }
+  .brand{display:flex; align-items:center; gap:12px;}
+  .brand .mark{
+    width:34px; height:34px; border-radius:8px;
+    background:linear-gradient(135deg, var(--gold), var(--vermillion));
+    display:flex; align-items:center; justify-content:center;
+    font-weight:900; color:#1a1006; font-size:18px; box-shadow: var(--shadow);
+  }
+  .brand h1{font-family:'Noto Serif TC',serif; font-size:20px; margin:0; letter-spacing:.06em; font-weight:900;}
+  .brand .tag{font-size:11px; color:var(--ink-faint); letter-spacing:.18em; margin-top:1px;}
+  .topbtns{display:flex; gap:8px;}
+  .ibtn{
+    border:1px solid var(--line); background:var(--panel-2); color:var(--ink-dim);
+    padding:8px 12px; border-radius:8px; cursor:pointer; font-size:13px;
+    display:flex; align-items:center; gap:6px; transition:.15s;
+  }
+  .ibtn:hover{border-color:var(--gold); color:var(--ink); background:var(--panel-3);}
+
+  /* ---------- Setup screen ---------- */
+  .setup-wrap{flex:1; display:flex; align-items:center; justify-content:center; padding:32px 16px;}
+  .setup-card{
+    width:100%; max-width:820px; background:var(--panel);
+    border:1px solid var(--line-soft); border-radius:18px; padding:34px;
+    box-shadow: var(--shadow);
+    position:relative; overflow:hidden;
+  }
+  .setup-card::before{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      linear-gradient(115deg, transparent 40%, rgba(207,159,63,.05) 50%, transparent 60%);
+    pointer-events:none;
+  }
+  .setup-hero{text-align:center; margin-bottom:28px;}
+  .setup-hero .glyphs{
+    display:flex; justify-content:center; gap:6px; margin-bottom:14px; opacity:.85;
+  }
+  .setup-hero .glyphs span{
+    width:30px; height:30px; border-radius:6px; display:flex; align-items:center; justify-content:center;
+    font-size:15px; border:1px solid var(--line); background:var(--panel-2); color:var(--gold-bright);
+  }
+  .setup-hero h2{font-family:'Noto Serif TC',serif; font-size:34px; margin:0 0 6px; font-weight:900; letter-spacing:.05em;}
+  .setup-hero p{color:var(--ink-dim); font-size:14px; margin:0; letter-spacing:.03em;}
+
+  .section-label{
+    font-size:12px; letter-spacing:.16em; color:var(--gold-bright); text-transform:uppercase;
+    margin:26px 0 10px; display:flex; align-items:center; gap:8px;
+  }
+  .section-label::after{content:""; flex:1; height:1px; background:var(--line-soft);}
+
+  .count-row{display:flex; gap:10px; flex-wrap:wrap;}
+  .count-btn{
+    width:56px; height:56px; border-radius:12px; border:1px solid var(--line);
+    background:var(--panel-2); color:var(--ink); font-size:20px; font-weight:700; cursor:pointer;
+    transition:.15s;
+  }
+  .count-btn:hover{border-color:var(--gold);}
+  .count-btn.active{
+    background:linear-gradient(155deg, var(--gold), #a97a28); color:#1c1304; border-color:var(--gold-bright);
+    box-shadow:0 4px 14px rgba(207,159,63,.3);
+  }
+
+  .player-rows{display:flex; flex-direction:column; gap:10px;}
+  .player-row{
+    display:flex; align-items:center; gap:12px; background:var(--panel-2);
+    border:1px solid var(--line-soft); border-radius:12px; padding:10px 14px;
+  }
+  .swatch{width:30px; height:30px; border-radius:8px; flex:none; box-shadow: inset 0 0 0 2px rgba(255,255,255,.15);}
+  .p-name{flex:1; font-size:14px; font-weight:500;}
+  .p-name input{
+    background:transparent; border:none; color:var(--ink); font-size:14px; font-weight:500;
+    width:100%; font-family:inherit; outline:none; border-bottom:1px dashed transparent;
+  }
+  .p-name input:focus{border-bottom-color:var(--gold);}
+  .toggle-group{display:flex; background:var(--panel-3); border-radius:8px; padding:3px; gap:2px;}
+  .toggle-group button{
+    border:none; background:transparent; color:var(--ink-faint); font-size:12px; padding:6px 10px;
+    border-radius:6px; cursor:pointer; letter-spacing:.03em;
+  }
+  .toggle-group button.active{background:var(--gold); color:#1c1304; font-weight:700;}
+  select.diff{
+    background:var(--panel-3); color:var(--ink); border:1px solid var(--line); border-radius:7px;
+    padding:6px 8px; font-size:12px; font-family:inherit;
+  }
+  .diff-holder{width:96px; display:flex; justify-content:flex-end;}
+
+  .start-row{display:flex; justify-content:center; margin-top:30px;}
+  .start-btn{
+    background:linear-gradient(155deg, var(--vermillion), #8f2f1d); color:#fbe9d6;
+    border:1px solid #e0663f; padding:15px 46px; border-radius:12px; font-size:16px; font-weight:700;
+    letter-spacing:.08em; cursor:pointer; box-shadow:0 10px 24px rgba(193,70,47,.35); transition:.15s;
+  }
+  .start-btn:hover{transform:translateY(-1px); box-shadow:0 14px 28px rgba(193,70,47,.45);}
+  .start-btn:disabled{opacity:.4; cursor:not-allowed; transform:none;}
+  .hint{text-align:center; color:var(--ink-faint); font-size:12px; margin-top:10px;}
+
+  .rules-toggle{
+    text-align:center; margin-top:18px; font-size:12.5px; color:var(--jade); cursor:pointer;
+    text-decoration:underline dotted; text-underline-offset:4px;
+  }
+  .rules-box{
+    margin-top:14px; background:var(--panel-2); border:1px solid var(--line-soft); border-radius:12px;
+    padding:16px 18px; font-size:13px; line-height:1.85; color:var(--ink-dim); display:none;
+  }
+  .rules-box.show{display:block;}
+  .rules-box b{color:var(--gold-bright); font-weight:700;}
+
+  /* ---------- Game screen ---------- */
+  .game-wrap{flex:1; display:flex; gap:18px; padding:18px 22px 26px; max-width:1360px; margin:0 auto; width:100%;}
+  .board-col{flex:1; display:flex; flex-direction:column; align-items:center; min-width:0;}
+  .side-col{width:300px; flex:none; display:flex; flex-direction:column; gap:14px;}
+
+  .turn-banner{
+    display:flex; align-items:center; gap:10px; margin-bottom:14px;
+    background:var(--panel); border:1px solid var(--line-soft); border-radius:12px; padding:10px 16px;
+    width:100%; max-width:560px;
+  }
+  .turn-banner .dot{width:14px; height:14px; border-radius:4px; flex:none; box-shadow: inset 0 0 0 2px rgba(255,255,255,.2);}
+  .turn-banner .txt{font-size:13.5px; flex:1;}
+  .turn-banner .txt b{font-weight:700;}
+  .turn-banner .thinking{font-size:11px; color:var(--ink-faint); display:flex; align-items:center; gap:6px;}
+  .spin{
+    width:11px; height:11px; border-radius:50%; border:2px solid var(--line);
+    border-top-color:var(--gold); animation:sp .7s linear infinite;
+  }
+  @keyframes sp{to{transform:rotate(360deg);}}
+
+  .board-shell{
+    position:relative; background:var(--panel); border:1px solid var(--line-soft); border-radius:16px;
+    padding:16px; box-shadow: var(--shadow);
+  }
+  .board-grid{
+    display:grid;
+    grid-template-columns: 30px repeat(9, var(--cell));
+    grid-template-rows: 26px repeat(9, var(--cell));
+    gap:2px;
+    position:relative;
+  }
+  .cellhead{
+    display:flex; align-items:center; justify-content:center;
+    color:var(--ink-faint); font-size:12px; font-family:'Space Mono',monospace;
+  }
+  .corner{}
+  .cell{
+    position:relative; border-radius:5px; display:flex; align-items:center; justify-content:center;
+    cursor:default; overflow:hidden; background:var(--panel-2);
+    border:1px solid var(--line-soft);
+    transition: box-shadow .12s, transform .1s;
+  }
+  .cell .rsym{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:calc(var(--cell) * 0.62); opacity:.16; color:var(--region-color, var(--gold)); pointer-events:none;
+  }
+  .cell.regionA{ background:#1e2b2c; }
+  .cell.regionB{ background:#1b2530; }
+  .cell.valid{cursor:pointer; box-shadow: 0 0 0 2px var(--jade) inset;}
+  .cell.valid:hover{box-shadow: 0 0 0 3px var(--gold-bright) inset; transform: scale(1.05); z-index:5;}
+  .cell.valid.capture{box-shadow: 0 0 0 2px var(--vermillion) inset;}
+  .cell.valid.capture:hover{box-shadow: 0 0 0 3px #ff7a58 inset;}
+  .cell.lastmove{box-shadow: 0 0 0 2px var(--gold-bright) inset;}
+
+  .tile{
+    width:82%; height:82%; border-radius:6px; display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-family:'Space Mono',monospace; position:relative; z-index:2;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.22), 0 2px 5px rgba(0,0,0,.35);
+    animation: pop .18s ease-out;
+  }
+  @keyframes pop{ from{ transform:scale(.5); opacity:0;} to{transform:scale(1); opacity:1;} }
+  .tile .glyph{font-size:calc(var(--cell) * 0.42); color:rgba(0,0,0,.72);}
+  .tile.wild .glyph{color:#fff9e4;}
+  .tile .ownermark{
+    position:absolute; right:2px; bottom:1px; font-size:calc(var(--cell) * 0.17);
+    color:rgba(255,255,255,.55); line-height:1; pointer-events:none;
+  }
+
+  .board-shell.small{--cell:34px;}
+
+  /* ---------- Side panels ---------- */
+  .panel{
+    background:var(--panel); border:1px solid var(--line-soft); border-radius:14px; padding:14px 16px;
+  }
+  .panel h3{
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint);
+    margin:0 0 10px; display:flex; align-items:center; gap:8px;
+  }
+  .panel h3::after{content:""; flex:1; height:1px; background:var(--line-soft);}
+
+  .plist{display:flex; flex-direction:column; gap:8px;}
+  .prow{
+    display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:10px;
+    border:1px solid transparent; background:var(--panel-2);
+  }
+  .prow.active{border-color:var(--gold); background:var(--panel-3);}
+  .prow.finished{opacity:.55;}
+  .prow .sw{width:22px; height:22px; border-radius:6px; flex:none; box-shadow: inset 0 0 0 2px rgba(255,255,255,.18);}
+  .prow .meta{flex:1; min-width:0;}
+  .prow .nm{font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .prow .sub{font-size:10.5px; color:var(--ink-faint); font-family:'Space Mono',monospace;}
+  .prow .stat{text-align:right; font-family:'Space Mono',monospace; font-size:12px; color:var(--ink-dim);}
+
+  .rack{
+    display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:14px;
+  }
+  .rack .tile-btn{
+    width:52px; height:52px; border-radius:9px; border:2px solid rgba(255,255,255,.15);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:700;
+    font-family:'Space Mono',monospace; font-size:20px; color:rgba(0,0,0,.72);
+    box-shadow: 0 3px 8px rgba(0,0,0,.35); transition:.12s;
+  }
+  .rack .tile-btn:hover{transform:translateY(-3px);}
+  .rack .tile-btn.selected{outline:3px solid var(--gold-bright); outline-offset:2px; transform:translateY(-4px);}
+  .rack .tile-btn.wild{color:#fff9e4;}
+  .rack .tile-btn.dead{opacity:.32; filter:grayscale(.6); cursor:not-allowed;}
+  .rack .tile-btn.dead:hover{transform:none;}
+  .rack-empty{color:var(--ink-faint); font-size:12px; text-align:center; padding:10px;}
+
+  .log{max-height:180px; overflow-y:auto; display:flex; flex-direction:column-reverse; gap:5px;}
+  .log::-webkit-scrollbar{width:6px;} .log::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px;}
+  .log-item{font-size:11.5px; color:var(--ink-dim); line-height:1.5;}
+  .log-item b{color:var(--ink);}
+
+  .legend{display:flex; flex-wrap:wrap; gap:8px 14px; font-size:11px; color:var(--ink-faint); margin-top:12px;}
+  .legend span{display:flex; align-items:center; gap:5px;}
+  .legend i{width:11px; height:11px; border-radius:3px; display:inline-block;}
+  .legend .lg-empty{box-shadow:0 0 0 2px var(--jade) inset;}
+  .legend .lg-cap{box-shadow:0 0 0 2px var(--vermillion) inset;}
+
+  .instruct{font-size:12.5px; color:var(--ink-dim); text-align:center; margin-top:10px; min-height:16px;}
+
+  /* ---------- End modal ---------- */
+  .modal-bg{
+    position:fixed; inset:0; background:rgba(8,10,12,.72); backdrop-filter: blur(3px);
+    display:flex; align-items:center; justify-content:center; z-index:50; padding:20px;
+  }
+  .modal{
+    width:100%; max-width:520px; background:var(--panel); border:1px solid var(--line-soft);
+    border-radius:18px; padding:30px; box-shadow:var(--shadow); text-align:center;
+  }
+  .modal h2{font-family:'Noto Serif TC',serif; font-size:26px; margin:0 0 4px; font-weight:900;}
+  .modal .winner-line{color:var(--gold-bright); font-size:14px; margin-bottom:20px;}
+  .score-table{width:100%; border-collapse:collapse; margin-bottom:22px; text-align:left;}
+  .score-table th{font-size:10.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.1em; padding:6px 8px; border-bottom:1px solid var(--line-soft);}
+  .score-table td{padding:8px; border-bottom:1px solid var(--line-soft); font-size:13px;}
+  .score-table tr.win td{color:var(--gold-bright); font-weight:700;}
+  .score-table .sw{width:16px; height:16px; border-radius:4px; display:inline-block; margin-right:8px; vertical-align:middle;}
+  .modal-btns{display:flex; gap:10px; justify-content:center;}
+  .modal-btns button{
+    padding:11px 22px; border-radius:10px; font-size:13.5px; cursor:pointer; font-weight:600;
+  }
+  .btn-primary{background:linear-gradient(155deg, var(--vermillion), #8f2f1d); color:#fbe9d6; border:1px solid #e0663f;}
+  .btn-ghost{background:var(--panel-2); color:var(--ink-dim); border:1px solid var(--line);}
+
+  @media (max-width: 980px){
+    .game-wrap{flex-direction:column; align-items:center; padding:14px;}
+    .side-col{width:100%; max-width:560px;}
+    .board-shell{--cell: min(9.4vw, 40px);}
+  }
+  @media (max-width: 560px){
+    .setup-card{padding:20px;}
+    .setup-hero h2{font-size:26px;}
+    .board-shell{--cell: min(9vw, 34px); padding:10px;}
+    .board-grid{grid-template-columns: 20px repeat(9, var(--cell)); grid-template-rows: 18px repeat(9, var(--cell));}
+  }
+  :root{ --cell: 46px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ===================== 常數與資料 ===================== */
+const ROW_LABELS = ['A','B','C','D','E','F','G','H','I'];
+const COL_LABELS = ['1','2','3','4','5','6','7','8','9'];
+const REGION_SYMS = ['●','■','▲','◆','★','⬟','✦','✚','◐'];
+const REGION_NAMES = ['圓','方','角','菱','星','盾','芒','十','弦'];
+
+const PLAYER_COLORS = ['#c74b3d','#3f7fb0','#d1a13a','#4a9772','#8d6bb5'];
+const PLAYER_NAMES_DEFAULT = ['赤','藍','金','綠','紫'];
+const PLAYER_SHAPES = ['●','■','▲','◆','⬟']; // 色盲輔助形狀
+const DIFF_LABELS = {easy:'簡單', medium:'中等', hard:'困難'};
+
+function regionIndex(r,c){ return Math.floor(r/3)*3 + Math.floor(c/3); }
+
+function makeDeck(){
+  const deck = [];
+  for(let i=0;i<9;i++) deck.push({type:'row', value:i});
+  for(let i=0;i<9;i++) deck.push({type:'col', value:i});
+  for(let i=0;i<9;i++) deck.push({type:'sym', value:i});
+  deck.push({type:'wild', value:null});
+  return deck;
+}
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
+/* ===================== 狀態 ===================== */
+let state = null; // set on start
+let setupCfg = {
+  total: 4,
+  humanCount: 1, // 前 humanCount 位為玩家（簡化：可各自切換）
+  players: [] // {isHuman, name, difficulty}
+};
+
+function initSetupPlayers(){
+  setupCfg.players = [];
+  for(let i=0;i<5;i++){
+    setupCfg.players.push({
+      isHuman: i===0,
+      name: PLAYER_NAMES_DEFAULT[i] + '方',
+      difficulty: 'medium'
+    });
+  }
+}
+initSetupPlayers();
+
+/* ===================== 遊戲邏輯 ===================== */
+function newGameState(cfg){
+  const n = cfg.total;
+  const players = [];
+  for(let i=0;i<n;i++){
+    const src = cfg.players[i];
+    const deck = shuffle(makeDeck());
+    const rack = deck.splice(0,5);
+    players.push({
+      id:i,
+      name: src.name || (PLAYER_NAMES_DEFAULT[i]+'方'),
+      color: PLAYER_COLORS[i],
+      shape: PLAYER_SHAPES[i],
+      isHuman: src.isHuman,
+      difficulty: src.difficulty,
+      deck, rack,
+      captured:{}, // opponentId -> count
+      done:false
+    });
+  }
+  return {
+    screen:'game',
+    board: Array.from({length:9}, ()=>Array(9).fill(null)),
+    players,
+    current: 0,
+    selectedTile: -1,
+    lastMove: null,
+    log: [],
+    turnBusy:false,
+    finished:false
+  };
+}
+
+function orthNeighbors(r,c){
+  const out=[];
+  if(r>0) out.push([r-1,c]);
+  if(r<8) out.push([r+1,c]);
+  if(c>0) out.push([r,c-1]);
+  if(c<8) out.push([r,c+1]);
+  return out;
+}
+
+// 每格資料改為 {owner, tile} 物件，讓棋盤上能顯示實際的字母/數字/花色/萬用牌，而非僅顯示玩家色塊
+function ownerAt(board, r, c){
+  const cell = board[r][c];
+  return cell ? cell.owner : null;
+}
+
+function canCapture(board, r, c){
+  const color = ownerAt(board,r,c);
+  if(color===null) return false;
+  const sameNbrs = orthNeighbors(r,c).filter(([nr,nc])=>ownerAt(board,nr,nc)===color);
+  if(sameNbrs.length<=1) return true;
+  // BFS from first neighbor across same-color cells, excluding (r,c)
+  const start = sameNbrs[0];
+  const visited = new Set([start[0]+'_'+start[1]]);
+  const queue=[start];
+  while(queue.length){
+    const [cr,cc] = queue.shift();
+    for(const [nr,nc] of orthNeighbors(cr,cc)){
+      if(nr===r && nc===c) continue;
+      if(ownerAt(board,nr,nc)!==color) continue;
+      const key = nr+'_'+nc;
+      if(!visited.has(key)){ visited.add(key); queue.push([nr,nc]); }
+    }
+  }
+  return sameNbrs.every(([nr,nc])=>visited.has(nr+'_'+nc));
+}
+
+function groupCount(board, color){
+  const seen = Array.from({length:9}, ()=>Array(9).fill(false));
+  let count=0;
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++){
+    if(ownerAt(board,r,c)===color && !seen[r][c]){
+      count++;
+      const queue=[[r,c]]; seen[r][c]=true;
+      while(queue.length){
+        const [cr,cc]=queue.shift();
+        for(const [nr,nc] of orthNeighbors(cr,cc)){
+          if(ownerAt(board,nr,nc)===color && !seen[nr][nc]){ seen[nr][nc]=true; queue.push([nr,nc]); }
+        }
+      }
+    }
+  }
+  return count;
+}
+
+function cellsForTile(tile){
+  const cells=[];
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++){
+    if(tile.type==='row' && r!==tile.value) continue;
+    if(tile.type==='col' && c!==tile.value) continue;
+    if(tile.type==='sym' && regionIndex(r,c)!==tile.value) continue;
+    cells.push([r,c]);
+  }
+  return cells;
+}
+
+function validTargets(board, tile, playerId){
+  const raw = cellsForTile(tile);
+  const out=[];
+  for(const [r,c] of raw){
+    const occ = ownerAt(board,r,c);
+    if(occ===null){ out.push({r,c,capture:false}); }
+    else if(occ!==playerId && canCapture(board,r,c)){ out.push({r,c,capture:true, capColor:occ}); }
+  }
+  return out;
+}
+
+function allPlayerMoves(board, player){
+  const moves=[];
+  player.rack.forEach((tile, idx)=>{
+    const targets = validTargets(board, tile, player.id);
+    targets.forEach(t=> moves.push({tileIdx:idx, tile, r:t.r, c:t.c, capture:t.capture, capColor:t.capColor}));
+  });
+  return moves;
+}
+
+function tileGlyph(tile){
+  if(tile.type==='row') return ROW_LABELS[tile.value];
+  if(tile.type==='col') return COL_LABELS[tile.value];
+  if(tile.type==='sym') return REGION_SYMS[tile.value];
+  return '☆';
+}
+function tileTitle(tile){
+  if(tile.type==='row') return '橫排 '+ROW_LABELS[tile.value];
+  if(tile.type==='col') return '直列 '+COL_LABELS[tile.value];
+  if(tile.type==='sym') return '區域 '+REGION_NAMES[tile.value]+REGION_SYMS[tile.value];
+  return '百搭（任意格）';
+}
+
+/* ===================== AI ===================== */
+function aiPickMove(state, player){
+  const board = state.board;
+  const moves = allPlayerMoves(board, player);
+  if(moves.length===0) return null;
+
+  if(player.difficulty==='easy'){
+    return moves[Math.floor(Math.random()*moves.length)];
+  }
+
+  // score each move
+  const beforeGroups = groupCount(board, player.id);
+  const scored = moves.map(m=>{
+    const clone = board.map(row=>row.slice());
+    clone[m.r][m.c] = {owner: player.id, tile: m.tile};
+    const afterGroups = groupCount(clone, player.id);
+    const delta = afterGroups - beforeGroups; // negative or zero good
+    let capturedCount = 0;
+    if(m.capture){
+      capturedCount = (player.captured[m.capColor]||0) + 1;
+    }
+    let score = -delta*12;
+    if(m.capture){
+      score += 1.5;                 // 些微鼓勵搶奪，壓縮對手空間
+      score -= capturedCount*1.8;   // 避免囤積同一顏色（會計分）
+    }
+    // 中心與角落區域略加權重（策略彈性較高）
+    const centerBias = 1 - (Math.abs(m.r-4)+Math.abs(m.c-4))/10;
+    score += centerBias * (player.difficulty==='hard'?0.8:0.3);
+    return {m, score};
+  });
+
+  scored.sort((a,b)=>b.score-a.score);
+
+  if(player.difficulty==='hard'){
+    // 90% 選最佳，10% 次佳，避免完全可預期
+    const pool = scored.slice(0, Math.min(2, scored.length));
+    return pool[Math.random()<0.85?0:pool.length-1].m;
+  }else{
+    // medium：前段隨機挑選，帶一點變化
+    const poolSize = Math.min(4, scored.length);
+    const pool = scored.slice(0, poolSize);
+    return pool[Math.floor(Math.random()*pool.length)].m;
+  }
+}
+
+/* ===================== 應用行動 ===================== */
+function applyMove(gs, playerId, tileIdx, r, c){
+  const player = gs.players[playerId];
+  const tile = player.rack[tileIdx];
+  const board = gs.board;
+  const wasCapture = ownerAt(board,r,c)!==null;
+  const capturedFrom = wasCapture ? ownerAt(board,r,c) : null;
+
+  board[r][c] = {owner: playerId, tile: {type:tile.type, value:tile.value}};
+  player.rack.splice(tileIdx,1);
+  if(wasCapture){
+    player.captured[capturedFrom] = (player.captured[capturedFrom]||0)+1;
+  }
+  if(player.deck.length>0){
+    player.rack.push(player.deck.shift());
+  }
+  if(player.rack.length===0){ player.done = true; }
+
+  gs.lastMove = {r,c,playerId};
+  const posName = ROW_LABELS[r]+COL_LABELS[c];
+  const tt = tileTitle(tile);
+  let msg = '<b style="color:'+player.color+'">'+esc(player.name)+'</b> 以「'+tt+'」落子於 <b>'+posName+'</b>';
+  if(wasCapture){
+    const victim = gs.players[capturedFrom];
+    msg += '，並奪取了 <b style="color:'+victim.color+'">'+esc(victim.name)+'</b> 的方塊！';
+  }
+  gs.log.push(msg);
+  if(gs.log.length>60) gs.log.shift();
+
+  advanceTurn(gs);
+}
+
+function esc(s){ return String(s).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+
+function advanceTurn(gs){
+  const n = gs.players.length;
+  const allDone = gs.players.every(p=>p.done);
+  if(allDone){ finishGame(gs); return; }
+  let next = gs.current;
+  for(let i=0;i<n;i++){
+    next = (next+1)%n;
+    if(!gs.players[next].done){ gs.current = next; return; }
+  }
+  finishGame(gs);
+}
+
+function finishGame(gs){
+  gs.finished = true;
+  gs.screen='end';
+  gs.results = gs.players.map(p=>{
+    const groups = groupCount(gs.board, p.id);
+    const capVals = Object.values(p.captured);
+    const maxCap = capVals.length? Math.max(...capVals) : 0;
+    const totalCap = capVals.reduce((a,b)=>a+b,0);
+    return {player:p, groups, maxCap, totalCap, score: groups+maxCap};
+  }).sort((a,b)=> a.score-b.score || a.totalCap-b.totalCap);
+}
+
+/* ===================== 音效（純程式碼生成，無需外部檔案） ===================== */
+let actx=null;
+function beep(freq=440, dur=0.09, type='sine', vol=0.05, delay=0){
+  try{
+    if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+    if(actx.state==='suspended') actx.resume();
+    const t0 = actx.currentTime + delay;
+    const o = actx.createOscillator();
+    const g = actx.createGain();
+    o.type=type; o.frequency.setValueAtTime(freq, t0);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(vol, t0+0.012);
+    o.connect(g); g.connect(actx.destination);
+    o.start(t0);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+    o.stop(t0+dur+0.03);
+  }catch(e){}
+}
+let sfxOn = true;
+
+// 落子：清脆單音
+function sfxPlace(){ if(sfxOn) beep(560,0.07,'triangle',0.05); }
+// 選取手牌：極短的提示音
+function sfxSelect(){ if(sfxOn) beep(880,0.045,'square',0.028); }
+// 取消選取
+function sfxDeselect(){ if(sfxOn) beep(660,0.04,'square',0.022); }
+// 奪取對手方塊：兩段下滑音，帶點侵略感
+function sfxCapture(){
+  if(!sfxOn) return;
+  beep(300,0.09,'sawtooth',0.055);
+  beep(210,0.13,'sawtooth',0.045,0.07);
+}
+// 無效操作：低沉短促的提示
+function sfxInvalid(){ if(sfxOn) beep(140,0.09,'square',0.035); }
+// 輪到玩家（人類）：溫和提示鈴
+function sfxYourTurn(){
+  if(!sfxOn) return;
+  beep(660,0.10,'sine',0.035);
+  beep(880,0.14,'sine',0.032,0.09);
+}
+// UI 介面按鈕
+function sfxUI(){ if(sfxOn) beep(740,0.05,'triangle',0.03); }
+// 遊戲結束勝利號角
+function sfxWin(){ if(sfxOn){ [523,659,784,1046].forEach((f,i)=>beep(f,0.20,'triangle',0.05,i*0.11)); } }
+// 遊戲結束（非勝利提示，較低調）
+function sfxGameOver(){ if(sfxOn){ [392,330].forEach((f,i)=>beep(f,0.22,'sine',0.035,i*0.14)); } }
+
+/* ===================== 背景音樂（大廳／遊戲中） =====================
+   請將以下兩個檔案放在與本 HTML 相同的資料夾內：
+     - lobby.mp3   → 於設置畫面（大廳）循環播放
+     - game.mp3    → 進入對局後循環播放
+   找不到檔案時會自動靜默略過，不影響遊戲運作。 */
+const lobbyMusic = new Audio('lobby.mp3');
+const gameMusic  = new Audio('game.mp3');
+[lobbyMusic, gameMusic].forEach(a=>{ a.loop = true; a.volume = 0.38; a.preload = 'auto'; });
+
+let musicOn = true;
+let musicMissing = { lobby:false, game:false };
+lobbyMusic.addEventListener('error', ()=>{ musicMissing.lobby = true; });
+gameMusic.addEventListener('error', ()=>{ musicMissing.game = true; });
+
+let activeMusicTrack = null; // 'lobby' | 'game' | null
+function syncMusic(force){
+  const screen = state ? state.screen : 'setup';
+  const desired = screen==='setup' ? 'lobby' : 'game';
+  if(!musicOn){
+    lobbyMusic.pause(); gameMusic.pause(); activeMusicTrack = null; return;
+  }
+  if(desired===activeMusicTrack && !force) return;
+  if(desired==='lobby'){
+    gameMusic.pause();
+    if(!musicMissing.lobby) lobbyMusic.play().catch(()=>{});
+  }else{
+    lobbyMusic.pause();
+    if(!musicMissing.game) gameMusic.play().catch(()=>{});
+  }
+  activeMusicTrack = desired;
+}
+// 瀏覽器要求使用者互動後才能播放音訊：第一次點擊時嘗試啟動音樂
+let audioUnlocked = false;
+document.addEventListener('click', function unlockAudio(){
+  if(audioUnlocked) return;
+  audioUnlocked = true;
+  if(actx && actx.state==='suspended') actx.resume();
+  syncMusic(true);
+}, {capture:true});
+
+
+/* ===================== 渲染 ===================== */
+const app = document.getElementById('app');
+
+function render(){
+  if(!state){ renderSetup(); return; }
+  if(state.screen==='game') renderGame();
+  else if(state.screen==='end') renderGame(true);
+}
+
+/* ---- Setup screen ---- */
+function renderSetup(){
+  const cfg = setupCfg;
+  const playerRows = cfg.players.slice(0,cfg.total).map((p,i)=>{
+    const humanBtns = `
+      <div class="toggle-group">
+        <button data-act="human" data-i="${i}" class="${p.isHuman?'active':''}">玩家</button>
+        <button data-act="ai" data-i="${i}" class="${!p.isHuman?'active':''}">AI</button>
+      </div>`;
+    const diffSel = !p.isHuman ? `
+      <select class="diff" data-act="diff" data-i="${i}">
+        <option value="easy" ${p.difficulty==='easy'?'selected':''}>簡單</option>
+        <option value="medium" ${p.difficulty==='medium'?'selected':''}>中等</option>
+        <option value="hard" ${p.difficulty==='hard'?'selected':''}>困難</option>
+      </select>` : `<span style="font-size:11px;color:var(--ink-faint);">—</span>`;
+    return `
+      <div class="player-row">
+        <div class="swatch" style="background:${PLAYER_COLORS[i]}"></div>
+        <div class="p-name"><input value="${esc(p.name)}" data-act="name" data-i="${i}" maxlength="8"></div>
+        ${humanBtns}
+        <div class="diff-holder">${diffSel}</div>
+      </div>`;
+  }).join('');
+
+  const humanTotal = cfg.players.slice(0,cfg.total).filter(p=>p.isHuman).length;
+
+  app.innerHTML = `
+    <div class="topbar">
+      <div class="brand"><div class="mark">爆</div><div><h1>大爆格</h1><div class="tag">CONNECT · CAPTURE · CONTROL</div></div></div>
+      <div class="topbtns">
+        <button class="ibtn" data-act="music" ${(musicMissing.lobby && musicMissing.game)?'title="找不到 lobby.mp3 / game.mp3"':''}>${musicOn?'🎵 音樂':'🔇 音樂關'}</button>
+        <button class="ibtn" data-act="sound">${sfxOn?'🔊 音效':'🔇 音效關'}</button>
+      </div>
+    </div>
+    <div class="setup-wrap">
+      <div class="setup-card">
+        <div class="setup-hero">
+          <div class="glyphs">${REGION_SYMS.map(s=>`<span>${s}</span>`).join('')}</div>
+          <h2>大爆格</h2>
+          <p>把你的方塊連成一片，同時提防對手的搶奪 — 邏輯與心理的九宮對局</p>
+        </div>
+
+        <div class="section-label">遊戲人數</div>
+        <div class="count-row">
+          ${[2,3,4,5].map(n=>`<button class="count-btn ${cfg.total===n?'active':''}" data-act="total" data-n="${n}">${n}</button>`).join('')}
+        </div>
+
+        <div class="section-label">玩家設定</div>
+        <div class="player-rows">${playerRows}</div>
+
+        <div class="start-row">
+          <button class="start-btn" data-act="start" ${humanTotal===0?'':''}>開始對局</button>
+        </div>
+        <div class="hint">${humanTotal===0? '目前全為 AI，將自動進行示範對局' : humanTotal+' 位玩家　·　'+(cfg.total-humanTotal)+' 位 AI'}</div>
+
+        <div class="rules-toggle" data-act="rules">展開規則說明</div>
+        <div class="rules-box" id="rulesBox">
+          <b>目標：</b>遊戲結束時，你的「群組數」加上「被你奪取最多的單一顏色數量」總和最少者獲勝。<br>
+          <b>棋盤：</b>9×9 方格，橫排以字母 A–I、直列以數字 1–9 標示，並劃分為 9 個 3×3 區域，各有專屬符號。<br>
+          <b>方塊：</b>每人持有橫排、直列、區域符號方塊各 9 個，加上百搭方塊 1 個，共 28 個。<br>
+          <b>回合：</b>從手上 5 個方塊中選 1 個，依規則放入對應格子（橫排方塊只能放在該橫排、直列方塊只能放在該直列、符號方塊只能放在對應區域、百搭可放任意格），然後補牌。<br>
+          <b>奪取：</b>可用合法方塊取代對手方塊，但前提是移除後不會把對方原本相連的一整群拆成兩群以上。<br>
+          <b>結束：</b>牌庫與手牌耗盡後結算，總分最少者獲勝；平手則比較奪取總數，越少越好。
+        </div>
+      </div>
+    </div>
+  `;
+
+  app.querySelectorAll('[data-act="total"]').forEach(b=>b.addEventListener('click',()=>{
+    sfxUI(); cfg.total = parseInt(b.dataset.n,10); render();
+  }));
+  app.querySelectorAll('[data-act="human"]').forEach(b=>b.addEventListener('click',()=>{
+    sfxUI(); cfg.players[parseInt(b.dataset.i,10)].isHuman = true; render();
+  }));
+  app.querySelectorAll('[data-act="ai"]').forEach(b=>b.addEventListener('click',()=>{
+    sfxUI(); cfg.players[parseInt(b.dataset.i,10)].isHuman = false; render();
+  }));
+  app.querySelectorAll('[data-act="diff"]').forEach(s=>s.addEventListener('change',()=>{
+    cfg.players[parseInt(s.dataset.i,10)].difficulty = s.value;
+  }));
+  app.querySelectorAll('[data-act="name"]').forEach(inp=>inp.addEventListener('input',()=>{
+    cfg.players[parseInt(inp.dataset.i,10)].name = inp.value || (PLAYER_NAMES_DEFAULT[parseInt(inp.dataset.i,10)]+'方');
+  }));
+  const rt = app.querySelector('[data-act="rules"]');
+  rt.addEventListener('click',()=>{
+    sfxUI();
+    const box = document.getElementById('rulesBox');
+    box.classList.toggle('show');
+    rt.textContent = box.classList.contains('show') ? '收合規則說明' : '展開規則說明';
+  });
+  app.querySelector('[data-act="music"]').addEventListener('click', ()=>{ musicOn=!musicOn; syncMusic(true); render(); });
+  app.querySelector('[data-act="sound"]').addEventListener('click', ()=>{ sfxOn=!sfxOn; render(); sfxUI(); });
+  app.querySelector('[data-act="start"]').addEventListener('click', ()=>{
+    sfxUI();
+    state = newGameState(setupCfg);
+    render();
+    maybeRunAI();
+  });
+  syncMusic();
+}
+
+/* ---- Game screen ---- */
+function renderGame(showEnd){
+  const gs = state;
+  const board = gs.board;
+  const cur = gs.players[gs.current];
+
+  // 輪到人類玩家時給予溫和提示音（僅在「換人」當下觸發一次，避免同一回合內重複選牌時誤觸發）
+  if(!gs.finished){
+    if(gs._lastAnnounced===undefined){ gs._lastAnnounced = gs.current; }
+    else if(gs._lastAnnounced !== gs.current){
+      gs._lastAnnounced = gs.current;
+      if(cur.isHuman) sfxYourTurn();
+    }
+  }
+
+  // board cells
+  let cellsHtml = `<div class="corner"></div>`;
+  for(let c=0;c<9;c++) cellsHtml += `<div class="cellhead">${COL_LABELS[c]}</div>`;
+
+  let selTile = (!gs.finished && cur.isHuman && gs.selectedTile>=0) ? cur.rack[gs.selectedTile] : null;
+  let validSet = new Map();
+  if(selTile){
+    validTargets(board, selTile, cur.id).forEach(t=> validSet.set(t.r+'_'+t.c, t));
+  }
+
+  for(let r=0;r<9;r++){
+    cellsHtml += `<div class="cellhead">${ROW_LABELS[r]}</div>`;
+    for(let c=0;c<9;c++){
+      const region = regionIndex(r,c);
+      const bandParity = (Math.floor(r/3)+Math.floor(c/3))%2===0 ? 'regionA':'regionB';
+      const cellData = board[r][c];
+      const occ = cellData ? cellData.owner : null;
+      const key = r+'_'+c;
+      const isValid = validSet.has(key);
+      const vinfo = validSet.get(key);
+      let cls = 'cell '+bandParity;
+      if(isValid) cls += ' valid'+(vinfo.capture?' capture':'');
+      if(gs.lastMove && gs.lastMove.r===r && gs.lastMove.c===c) cls += ' lastmove';
+      let inner = `<div class="rsym">${REGION_SYMS[region]}</div>`;
+      if(occ!==null){
+        const p = gs.players[occ];
+        const wildCls = cellData.tile.type==='wild' ? ' wild' : '';
+        inner += `<div class="tile${wildCls}" style="background:${p.color}" title="${esc(tileTitle(cellData.tile))}">
+            <span class="glyph">${tileGlyph(cellData.tile)}</span>
+            <span class="ownermark">${p.shape}</span>
+          </div>`;
+      }
+      cellsHtml += `<div class="${cls}" data-r="${r}" data-c="${c}" title="${ROW_LABELS[r]}${COL_LABELS[c]}">${inner}</div>`;
+    }
+  }
+
+  // side: player list
+  const plistHtml = gs.players.map(p=>{
+    const groups = groupCount(board, p.id);
+    const capVals = Object.values(p.captured);
+    const maxCap = capVals.length?Math.max(...capVals):0;
+    const activeCls = (!gs.finished && p.id===gs.current)?'active':'';
+    const doneCls = p.done?'finished':'';
+    return `<div class="prow ${activeCls} ${doneCls}">
+      <div class="sw" style="background:${p.color}"></div>
+      <div class="meta">
+        <div class="nm">${esc(p.name)} ${p.isHuman?'':'· AI·'+DIFF_LABELS[p.difficulty]}</div>
+        <div class="sub">牌庫 ${p.deck.length}　手牌 ${p.rack.length}</div>
+      </div>
+      <div class="stat">群${groups}<br>奪${maxCap}</div>
+    </div>`;
+  }).join('');
+
+  // rack
+  let rackHtml = '';
+  if(!gs.finished){
+    if(cur.isHuman){
+      if(cur.rack.length===0){
+        rackHtml = `<div class="rack-empty">此玩家已無手牌</div>`;
+      }else{
+        rackHtml = `<div class="rack">` + cur.rack.map((t,i)=>{
+          const sel = (gs.selectedTile===i)?'selected':'';
+          const wild = t.type==='wild'?'wild':'';
+          const dead = validTargets(board, t, cur.id).length===0 ? 'dead' : '';
+          return `<div class="tile-btn ${sel} ${wild} ${dead}" style="background:${cur.color}" data-tileidx="${i}" title="${tileTitle(t)}${dead?'（目前無可放置的格子）':''}">${tileGlyph(t)}</div>`;
+        }).join('') + `</div>`;
+      }
+    }else{
+      rackHtml = `<div class="rack">` + cur.rack.map(t=>{
+        return `<div class="tile-btn" style="background:${cur.color};opacity:.55" >${tileGlyph(t)}</div>`;
+      }).join('') + `</div>`;
+    }
+  }
+
+  const instructText = gs.finished ? '' :
+    (cur.isHuman ? (gs.selectedTile>=0 ? '請點擊棋盤上高亮的格子放置方塊' : '請先從下方手牌選擇一個方塊') : `${esc(cur.name)}（AI）思考中…`);
+
+  const logHtml = gs.log.slice(-40).map(m=>`<div class="log-item">${m}</div>`).join('');
+
+  app.innerHTML = `
+    <div class="topbar">
+      <div class="brand"><div class="mark">爆</div><div><h1>大爆格</h1><div class="tag">CONNECT · CAPTURE · CONTROL</div></div></div>
+      <div class="topbtns">
+        <button class="ibtn" data-act="music" ${(musicMissing.lobby && musicMissing.game)?'title="找不到 lobby.mp3 / game.mp3"':''}>${musicOn?'🎵 音樂':'🔇 音樂關'}</button>
+        <button class="ibtn" data-act="sound">${sfxOn?'🔊 音效':'🔇 音效關'}</button>
+        <button class="ibtn" data-act="fullscreen">⛶ 全螢幕</button>
+        <button class="ibtn" data-act="restart">↺ 重新設置</button>
+      </div>
+    </div>
+    <div class="game-wrap">
+      <div class="board-col">
+        <div class="turn-banner">
+          <div class="dot" style="background:${cur.color}"></div>
+          <div class="txt">${gs.finished? '對局結束' : `輪到 <b style="color:${cur.color}">${esc(cur.name)}</b>`}</div>
+          ${(!gs.finished && !cur.isHuman) ? `<div class="thinking"><div class="spin"></div>AI 執行中</div>` : ''}
+        </div>
+        <div class="board-shell" id="boardShell">
+          <div class="board-grid" id="boardGrid">${cellsHtml}</div>
+        </div>
+        <div class="instruct">${instructText}</div>
+        <div class="legend">
+          <span><i class="lg-empty"></i>可放置</span>
+          <span><i class="lg-cap"></i>可奪取</span>
+        </div>
+      </div>
+      <div class="side-col">
+        <div class="panel">
+          <h3>棋局狀態</h3>
+          <div class="plist">${plistHtml}</div>
+          ${!gs.finished && cur.isHuman ? rackHtml : (!gs.finished? `<div class="rack-empty">等待 AI 出手…</div>`:'')}
+        </div>
+        <div class="panel">
+          <h3>對局紀錄</h3>
+          <div class="log">${logHtml}</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 棋盤格點擊由下方的 document 層級事件委派統一處理（見檔案底部）
+
+  app.querySelectorAll('.rack .tile-btn[data-tileidx]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      if(!cur.isHuman || gs.finished) return;
+      const idx = parseInt(el.dataset.tileidx,10);
+      const tile = cur.rack[idx];
+      const targets = validTargets(gs.board, tile, cur.id);
+      if(targets.length===0){ sfxInvalid(); return; }
+      const wasSelected = gs.selectedTile===idx;
+      gs.selectedTile = wasSelected ? -1 : idx;
+      wasSelected ? sfxDeselect() : sfxSelect();
+      render();
+    });
+  });
+
+  app.querySelector('[data-act="music"]').addEventListener('click', ()=>{ musicOn=!musicOn; syncMusic(true); render(); });
+  app.querySelector('[data-act="sound"]').addEventListener('click', ()=>{ sfxOn=!sfxOn; render(); sfxUI(); });
+  app.querySelector('[data-act="fullscreen"]').addEventListener('click', ()=>{ sfxUI(); toggleFullscreen(); });
+  app.querySelector('[data-act="restart"]').addEventListener('click', ()=>{ sfxUI(); state=null; render(); });
+
+  if(gs.finished){ renderEndModal(); }
+  syncMusic();
+}
+
+function toggleFullscreen(){
+  if(!document.fullscreenElement){ document.documentElement.requestFullscreen().catch(()=>{}); }
+  else{ document.exitFullscreen().catch(()=>{}); }
+}
+
+function renderEndModal(){
+  const gs = state;
+  const rows = gs.results.map((res,i)=>{
+    return `<tr class="${i===0?'win':''}">
+      <td>${i===0?'👑':i+1}</td>
+      <td><span class="sw" style="background:${res.player.color}"></span>${esc(res.player.name)}</td>
+      <td>${res.groups}</td>
+      <td>${res.maxCap}</td>
+      <td>${res.score}</td>
+    </tr>`;
+  }).join('');
+  const winner = gs.results[0].player;
+  const div = document.createElement('div');
+  div.className='modal-bg';
+  div.innerHTML = `
+    <div class="modal">
+      <h2>對局結束</h2>
+      <div class="winner-line">🏆 ${esc(winner.name)} 獲勝！</div>
+      <table class="score-table">
+        <thead><tr><th>名次</th><th>玩家</th><th>群組</th><th>被奪上限</th><th>總分</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="modal-btns">
+        <button class="btn-primary" data-act="again">再來一局（同設定）</button>
+        <button class="btn-ghost" data-act="setup">回到設置</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(div);
+  div.querySelector('[data-act="again"]').addEventListener('click', ()=>{
+    sfxUI();
+    document.body.removeChild(div);
+    state = newGameState(setupCfg);
+    render();
+    maybeRunAI();
+  });
+  div.querySelector('[data-act="setup"]').addEventListener('click', ()=>{
+    sfxUI();
+    document.body.removeChild(div);
+    state = null;
+    render();
+  });
+  const humanWon = winner.isHuman;
+  const anyHuman = gs.players.some(p=>p.isHuman);
+  if(!anyHuman || humanWon) sfxWin(); else sfxGameOver();
+}
+
+/* ===================== AI 迴圈 ===================== */
+function maybeRunAI(){
+  if(!state || state.finished) return;
+  const cur = state.players[state.current];
+  if(cur.isHuman) return;
+  if(cur.rack.length===0){ advanceTurn(state); render(); setTimeout(maybeRunAI, 350); return; }
+  setTimeout(()=>{
+    if(!state || state.finished) return;
+    const move = aiPickMove(state, cur);
+    if(!move){
+      // 無合法行動，視為結束（極少見）
+      cur.done = true;
+      advanceTurn(state);
+      render();
+      setTimeout(maybeRunAI, 300);
+      return;
+    }
+    if(move.capture) sfxCapture(); else sfxPlace();
+    applyMove(state, cur.id, move.tileIdx, move.r, move.c);
+    render();
+    setTimeout(maybeRunAI, 420);
+  }, 480 + Math.random()*380);
+}
+
+/* 修正人類點擊流程：改用事件委派，避免上方 placeholder 邏輯出錯 */
+document.addEventListener('click', function(ev){
+  if(!state || state.screen!=='game' || state.finished) return;
+  const cur = state.players[state.current];
+  if(!cur.isHuman) return;
+  const cellEl = ev.target.closest('.cell.valid');
+  if(cellEl && document.getElementById('boardGrid') && document.getElementById('boardGrid').contains(cellEl)){
+    if(state.selectedTile<0) return;
+    const r = parseInt(cellEl.dataset.r,10), c = parseInt(cellEl.dataset.c,10);
+    const tileIdx = state.selectedTile;
+    const tile = cur.rack[tileIdx];
+    const willCapture = state.board[r][c]!==null;
+    state.selectedTile = -1;
+    if(willCapture) sfxCapture(); else sfxPlace();
+    applyMove(state, cur.id, tileIdx, r, c);
+    render();
+    setTimeout(maybeRunAI, 380);
+  }
+}, true);
+
+render();
+})();
+</script>
+</body>
+</html>
