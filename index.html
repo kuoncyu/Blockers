@@ -214,7 +214,7 @@
     display:grid;
     grid-template-columns: 30px repeat(9, var(--cell));
     grid-template-rows: 26px repeat(9, var(--cell));
-    gap:2px;
+    gap:0;
     position:relative;
   }
   .cellhead{
@@ -223,17 +223,25 @@
   }
   .corner{}
   .cell{
-    position:relative; border-radius:5px; display:flex; align-items:center; justify-content:center;
+    --bw: 3px;
+    position:relative; border-radius:0; display:flex; align-items:center; justify-content:center;
     cursor:default; overflow:hidden; background:var(--panel-2);
-    border:1px solid var(--line-soft);
-    transition: box-shadow .12s, transform .1s;
+    background-image:
+      linear-gradient(var(--ct, var(--line-soft)), var(--ct, var(--line-soft))),
+      linear-gradient(var(--cr, var(--line-soft)), var(--cr, var(--line-soft))),
+      linear-gradient(var(--cb, var(--line-soft)), var(--cb, var(--line-soft))),
+      linear-gradient(var(--cl, var(--line-soft)), var(--cl, var(--line-soft)));
+    background-repeat: no-repeat;
+    background-position: top, right, bottom, left;
+    background-size: 100% var(--bw), var(--bw) 100%, 100% var(--bw), var(--bw) 100%;
+    transition: box-shadow .12s, transform .1s, background-image .12s;
   }
   .cell .rsym{
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
     font-size:calc(var(--cell) * 0.62); opacity:.16; color:var(--region-color, var(--gold)); pointer-events:none;
   }
-  .cell.regionA{ background:#1e2b2c; }
-  .cell.regionB{ background:#1b2530; }
+  .cell.regionA{ background-color:#1e2b2c; }
+  .cell.regionB{ background-color:#1b2530; }
   .cell.valid{cursor:pointer; box-shadow: 0 0 0 2px var(--jade) inset;}
   .cell.valid:hover{box-shadow: 0 0 0 3px var(--gold-bright) inset; transform: scale(1.05); z-index:5;}
   .cell.valid.capture{box-shadow: 0 0 0 2px var(--vermillion) inset;}
@@ -241,18 +249,22 @@
   .cell.lastmove{box-shadow: 0 0 0 2px var(--gold-bright) inset;}
 
   .tile{
-    width:82%; height:82%; border-radius:6px; display:flex; align-items:center; justify-content:center;
+    --tbw: 3px;
+    width:100%; height:100%; border-radius:0; display:flex; align-items:center; justify-content:center;
     font-weight:700; font-family:'Space Mono',monospace; position:relative; z-index:2;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,.22), 0 2px 5px rgba(0,0,0,.35);
+    background-image:
+      linear-gradient(var(--tt, rgba(255,255,255,.22)), var(--tt, rgba(255,255,255,.22))),
+      linear-gradient(var(--tr, rgba(255,255,255,.22)), var(--tr, rgba(255,255,255,.22))),
+      linear-gradient(var(--tb, rgba(255,255,255,.22)), var(--tb, rgba(255,255,255,.22))),
+      linear-gradient(var(--tl, rgba(255,255,255,.22)), var(--tl, rgba(255,255,255,.22)));
+    background-repeat: no-repeat;
+    background-position: top, right, bottom, left;
+    background-size: 100% var(--tbw), var(--tbw) 100%, 100% var(--tbw), var(--tbw) 100%;
     animation: pop .18s ease-out;
   }
   @keyframes pop{ from{ transform:scale(.5); opacity:0;} to{transform:scale(1); opacity:1;} }
   .tile .glyph{font-size:calc(var(--cell) * 0.42); color:rgba(0,0,0,.72);}
   .tile.wild .glyph{color:#fff9e4;}
-  .tile .ownermark{
-    position:absolute; right:2px; bottom:1px; font-size:calc(var(--cell) * 0.17);
-    color:rgba(255,255,255,.55); line-height:1; pointer-events:none;
-  }
 
   .board-shell.small{--cell:34px;}
 
@@ -278,6 +290,24 @@
   .prow .nm{font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .prow .sub{font-size:10.5px; color:var(--ink-faint); font-family:'Space Mono',monospace;}
   .prow .stat{text-align:right; font-family:'Space Mono',monospace; font-size:12px; color:var(--ink-dim);}
+  .cap-dot{width:9px; height:9px; border-radius:3px; display:inline-block; vertical-align:middle; margin-right:3px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.3);}
+  .cap-chip{display:inline-flex; align-items:center; margin-left:6px; font-size:11.5px;}
+  .cap-chip:first-child{margin-left:0;}
+  .cap-chip.max{font-weight:700; color:var(--gold-bright);}
+  .stat.cap-stat.clickable{cursor:pointer;}
+  .stat.cap-stat.clickable:hover{color:var(--gold-bright);}
+  .cap-modal{max-width:420px; text-align:left;}
+  .cap-modal h2{text-align:center;}
+  .cap-modal .winner-line{text-align:center;}
+  .cap-detail-group{margin-bottom:14px;}
+  .cap-detail-head{font-size:12.5px; font-weight:700; color:var(--ink); margin-bottom:6px; display:flex; align-items:center;}
+  .cap-detail-list{display:flex; flex-wrap:wrap; gap:8px;}
+  .cap-tile-chip{
+    width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-family:'Space Mono',monospace; font-size:14px; color:rgba(0,0,0,.72);
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.22);
+  }
+  .cap-tile-chip.wild{color:#fff9e4;}
 
   .rack{
     display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:14px;
@@ -418,6 +448,7 @@ function newGameState(cfg){
       difficulty: src.difficulty,
       deck, rack,
       captured:{}, // opponentId -> count
+      captureLog:[], // [{r,c,fromPlayerId,tile}] 記錄每一次奪取的實際位置與方塊，供玩家點擊查看
       done:false
     });
   }
@@ -486,6 +517,14 @@ function groupCount(board, color){
     }
   }
   return count;
+}
+
+// 依「奪取數」由高到低列出每個被奪色的數量，回傳 [{playerId, color, count}, ...]
+function captureBreakdown(players, captured){
+  return Object.keys(captured)
+    .map(k=>({playerId:Number(k), color:players[Number(k)].color, count:captured[k]}))
+    .filter(x=>x.count>0)
+    .sort((a,b)=>b.count-a.count);
 }
 
 function cellsForTile(tile){
@@ -585,11 +624,13 @@ function applyMove(gs, playerId, tileIdx, r, c){
   const board = gs.board;
   const wasCapture = ownerAt(board,r,c)!==null;
   const capturedFrom = wasCapture ? ownerAt(board,r,c) : null;
+  const capturedTile = wasCapture ? board[r][c].tile : null;
 
   board[r][c] = {owner: playerId, tile: {type:tile.type, value:tile.value}};
   player.rack.splice(tileIdx,1);
   if(wasCapture){
     player.captured[capturedFrom] = (player.captured[capturedFrom]||0)+1;
+    player.captureLog.push({r, c, fromPlayerId:capturedFrom, tile:capturedTile});
   }
   if(player.deck.length>0){
     player.rack.push(player.deck.shift());
@@ -639,7 +680,8 @@ function finishGame(gs){
     const capVals = Object.values(p.captured);
     const maxCap = capVals.length? Math.max(...capVals) : 0;
     const totalCap = capVals.reduce((a,b)=>a+b,0);
-    return {player:p, groups, maxCap, totalCap, score: groups+maxCap};
+    const dom = captureBreakdown(gs.players, p.captured);
+    return {player:p, groups, maxCap, totalCap, capBreak: dom, score: groups+maxCap};
   }).sort((a,b)=> a.score-b.score || a.totalCap-b.totalCap);
 }
 
@@ -949,24 +991,52 @@ function renderGame(showEnd){
       let cls = 'cell '+bandParity;
       if(isValid) cls += ' valid'+(vinfo.capture?' capture':'');
       if(gs.lastMove && gs.lastMove.r===r && gs.lastMove.c===c) cls += ' lastmove';
+
+      // 邊框預設不變色；當某一側的鄰格為同色方塊時，該側邊框（格子與棋子皆同）改為該玩家色，呈現「相連」視覺
+      let borderStyle = '';
+      let tileBorderStyle = '';
+      if(occ!==null){
+        const p = gs.players[occ];
+        const linkTop    = r>0 && ownerAt(board,r-1,c)===occ;
+        const linkRight  = c<8 && ownerAt(board,r,c+1)===occ;
+        const linkBottom = r<8 && ownerAt(board,r+1,c)===occ;
+        const linkLeft   = c>0 && ownerAt(board,r,c-1)===occ;
+        const decls=[];
+        if(linkTop)    decls.push(`--ct:${p.color}`);
+        if(linkRight)  decls.push(`--cr:${p.color}`);
+        if(linkBottom) decls.push(`--cb:${p.color}`);
+        if(linkLeft)   decls.push(`--cl:${p.color}`);
+        if(decls.length) borderStyle = ` style="${decls.join(';')}"`;
+
+        const tdecls=[];
+        if(linkTop)    tdecls.push(`--tt:${p.color}`);
+        if(linkRight)  tdecls.push(`--tr:${p.color}`);
+        if(linkBottom) tdecls.push(`--tb:${p.color}`);
+        if(linkLeft)   tdecls.push(`--tl:${p.color}`);
+        tileBorderStyle = `background-color:${p.color}` + (tdecls.length? ';'+tdecls.join(';') : '');
+      }
+
       let inner = `<div class="rsym">${REGION_SYMS[region]}</div>`;
       if(occ!==null){
         const p = gs.players[occ];
         const wildCls = cellData.tile.type==='wild' ? ' wild' : '';
-        inner += `<div class="tile${wildCls}" style="background:${p.color}" title="${esc(tileTitle(cellData.tile))}">
+        inner += `<div class="tile${wildCls}" style="${tileBorderStyle}" title="${esc(tileTitle(cellData.tile))}">
             <span class="glyph">${tileGlyph(cellData.tile)}</span>
-            <span class="ownermark">${p.shape}</span>
           </div>`;
       }
-      cellsHtml += `<div class="${cls}" data-r="${r}" data-c="${c}" title="${ROW_LABELS[r]}${COL_LABELS[c]}">${inner}</div>`;
+      cellsHtml += `<div class="${cls}" data-r="${r}" data-c="${c}" title="${ROW_LABELS[r]}${COL_LABELS[c]}"${borderStyle}>${inner}</div>`;
     }
   }
 
   // side: player list
   const plistHtml = gs.players.map(p=>{
     const groups = groupCount(board, p.id);
-    const capVals = Object.values(p.captured);
+    const capBreak = captureBreakdown(gs.players, p.captured);
+    const capVals = capBreak.map(x=>x.count);
     const maxCap = capVals.length?Math.max(...capVals):0;
+    const capHtml = capBreak.length
+      ? capBreak.map(b=>`<span class="cap-chip"><i class="cap-dot" style="background:${b.color}"></i>${b.count}</span>`).join('')
+      : '0';
     const activeCls = (!gs.finished && p.id===gs.current)?'active':'';
     const doneCls = p.done?'finished':'';
     return `<div class="prow ${activeCls} ${doneCls}">
@@ -975,7 +1045,7 @@ function renderGame(showEnd){
         <div class="nm">${esc(p.name)} ${p.isHuman?'':'· AI·'+DIFF_LABELS[p.difficulty]}</div>
         <div class="sub">牌庫 ${p.deck.length}　手牌 ${p.rack.length}</div>
       </div>
-      <div class="stat">群${groups}<br>奪${maxCap}</div>
+      <div class="stat cap-stat${capBreak.length?' clickable':''}" ${capBreak.length?`data-act="cap-detail" data-pid="${p.id}"`:''}>群${groups}<br>奪 ${capHtml}</div>
     </div>`;
   }).join('');
 
@@ -1059,11 +1129,54 @@ function renderGame(showEnd){
     });
   });
 
+  app.querySelectorAll('[data-act="cap-detail"]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      sfxUI();
+      showCaptureDetail(gs, parseInt(el.dataset.pid,10));
+    });
+  });
+
   wireTopBtns(app);
   app.querySelector('[data-act="restart"]').addEventListener('click', ()=>{ sfxUI(); state=null; render(); });
 
   if(gs.finished){ renderEndModal(); }
   syncMusic();
+}
+
+function showCaptureDetail(gs, playerId){
+  const player = gs.players[playerId];
+  const groups = {};
+  (player.captureLog||[]).forEach(e=>{
+    if(!groups[e.fromPlayerId]) groups[e.fromPlayerId] = [];
+    groups[e.fromPlayerId].push(e);
+  });
+  const order = Object.keys(groups).map(Number).sort((a,b)=> groups[b].length-groups[a].length);
+  const sectionsHtml = order.map(pid=>{
+    const victim = gs.players[pid];
+    const entries = groups[pid];
+    const itemsHtml = entries.map(e=>{
+      const wildCls = e.tile.type==='wild' ? ' wild' : '';
+      return `<div class="cap-tile-chip${wildCls}" style="background:${victim.color}" title="${esc(tileTitle(e.tile))}">${tileGlyph(e.tile)}</div>`;
+    }).join('');
+    return `<div class="cap-detail-group">
+      <div class="cap-detail-head"><i class="cap-dot" style="background:${victim.color}"></i>${esc(victim.name)}　共 ${entries.length} 塊</div>
+      <div class="cap-detail-list">${itemsHtml}</div>
+    </div>`;
+  }).join('');
+
+  const div = document.createElement('div');
+  div.className = 'modal-bg';
+  div.innerHTML = `
+    <div class="modal cap-modal">
+      <h2>奪取明細</h2>
+      <div class="winner-line" style="color:${player.color}">${esc(player.name)} 奪取的方塊</div>
+      ${sectionsHtml || '<div class="rack-empty">尚未奪取任何方塊</div>'}
+      <div class="modal-btns"><button class="btn-ghost" data-act="close-cap">關閉</button></div>
+    </div>
+  `;
+  document.body.appendChild(div);
+  div.addEventListener('click', (e)=>{ if(e.target===div) div.remove(); });
+  div.querySelector('[data-act="close-cap"]').addEventListener('click', ()=> div.remove());
 }
 
 function toggleFullscreen(){
@@ -1082,7 +1195,7 @@ function renderEndModal(){
       <td>${i===0?'👑':i+1}</td>
       <td><span class="sw" style="background:${res.player.color}"></span>${esc(res.player.name)}</td>
       <td>${res.groups}</td>
-      <td>${res.maxCap}</td>
+      <td>${res.capBreak.length ? res.capBreak.map(b=>`<span class="cap-chip${b.count===res.maxCap?' max':''}"><i class="cap-dot" style="background:${b.color}"></i>${b.count}</span>`).join('') : 0}</td>
       <td>${res.score}</td>
     </tr>`;
   }).join('');
