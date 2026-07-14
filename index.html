@@ -73,18 +73,6 @@
   .ibtn.icon-only{
     width:38px; height:38px; padding:0; justify-content:center; font-size:16px; flex:none;
   }
-  .audio-ctrl{
-    display:flex; align-items:center; background:var(--panel-2);
-    border:1px solid var(--line); border-radius:8px; overflow:hidden;
-  }
-  .audio-ctrl .ibtn{border:none; background:transparent;}
-  .audio-ctrl .ibtn:hover{background:var(--panel-3);}
-  .vol-popover{
-    max-width:0; opacity:0; overflow:hidden; padding:0;
-    transition: max-width .2s ease, opacity .15s ease, padding .2s ease;
-    display:flex; align-items:center;
-  }
-  .vol-popover.open{ max-width:90px; opacity:1; padding:0 12px 0 2px; }
   .vol-slider{
     -webkit-appearance:none; appearance:none; width:64px; height:4px; border-radius:2px;
     background:var(--line); outline:none; cursor:pointer; accent-color:var(--gold); flex:none;
@@ -96,6 +84,116 @@
   .vol-slider::-moz-range-thumb{
     width:12px; height:12px; border-radius:50%; background:var(--gold-bright); border:none; cursor:pointer;
   }
+
+  /* ---------- Start screen ---------- */
+  .start-wrap{flex:1; display:flex; align-items:center; justify-content:center; padding:32px 16px; min-height:100vh;}
+  .start-card{
+    width:100%; max-width:560px; text-align:center; background:var(--panel);
+    border:1px solid var(--line-soft); border-radius:20px; padding:48px 34px;
+    box-shadow:var(--shadow); position:relative; overflow:hidden;
+  }
+  .start-card::before{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(120deg, transparent 35%, rgba(207,159,63,.06) 50%, transparent 65%);
+    pointer-events:none;
+  }
+  .start-card .glyphs{display:flex; justify-content:center; gap:6px; margin-bottom:20px; opacity:.8;}
+  .start-card .glyphs span{
+    width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center;
+    font-size:14px; border:1px solid var(--line); background:var(--panel-2); color:var(--gold-bright);
+  }
+  .start-mark{
+    width:64px; height:64px; margin:0 auto 16px; border-radius:16px;
+    background:linear-gradient(135deg, var(--gold), var(--vermillion));
+    display:flex; align-items:center; justify-content:center;
+    font-weight:900; color:#1a1006; font-size:32px; box-shadow:var(--shadow);
+  }
+  .start-card h1{font-family:'Noto Serif TC',serif; font-size:38px; margin:0 0 6px; font-weight:900; letter-spacing:.06em;}
+  .start-card .tag{font-size:11px; color:var(--ink-faint); letter-spacing:.22em; margin-bottom:18px;}
+  .start-desc{color:var(--ink-dim); font-size:14px; line-height:1.7; margin:0 0 30px;}
+  .start-hero-btn{
+    padding:16px 34px; border-radius:14px; font-size:16px; font-weight:700; cursor:pointer;
+    background:linear-gradient(155deg, var(--gold), #a97a28); color:#1c1304; border:1px solid var(--gold-bright);
+    box-shadow:0 8px 24px rgba(207,159,63,.25); transition:.15s;
+    animation: startPulse 2.4s ease-in-out infinite;
+  }
+  .start-hero-btn:hover{ transform:translateY(-2px); box-shadow:0 12px 28px rgba(207,159,63,.35); }
+  @keyframes startPulse{
+    0%,100%{ box-shadow:0 8px 24px rgba(207,159,63,.25); }
+    50%{ box-shadow:0 8px 30px rgba(207,159,63,.45); }
+  }
+  .start-hint{margin-top:16px; font-size:11.5px; color:var(--ink-faint); letter-spacing:.03em;}
+
+  .lobby-badge{
+    display:inline-block; font-size:11px; letter-spacing:.18em; color:var(--gold-bright);
+    border:1px solid var(--line); background:var(--panel-2); padding:4px 12px; border-radius:20px;
+    margin-bottom:12px; text-transform:uppercase;
+  }
+
+  /* ---------- Settings modal ---------- */
+  .settings-modal{ max-width:600px; text-align:left; max-height:82vh; display:flex; flex-direction:column; }
+  .settings-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .settings-head h2{ margin:0; }
+  .modal-close{
+    background:var(--panel-2); border:1px solid var(--line); color:var(--ink-dim);
+    width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:14px;
+  }
+  .modal-close:hover{ color:var(--ink); border-color:var(--gold); }
+  .settings-tabs{ display:flex; gap:8px; margin-bottom:18px; border-bottom:1px solid var(--line-soft); padding-bottom:12px;}
+  .settings-tab{
+    flex:1; padding:10px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2);
+    color:var(--ink-dim); cursor:pointer; font-size:13px; font-weight:600; transition:.15s;
+  }
+  .settings-tab:hover{ border-color:var(--gold); }
+  .settings-tab.active{ background:linear-gradient(155deg, var(--gold), #a97a28); color:#1c1304; border-color:var(--gold-bright); }
+  .settings-body{ overflow-y:auto; padding-right:4px; }
+  .vol-row{ display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+  .vol-label{ width:110px; font-size:13.5px; color:var(--ink-dim); flex:none; }
+  .vol-slider.wide{ flex:1; width:auto; }
+  .vol-val{ width:42px; text-align:right; font-size:12.5px; color:var(--ink-faint); flex:none; }
+  .settings-divider{ height:1px; background:var(--line-soft); margin:20px 0; }
+  .settings-fs-btn{ width:100%; justify-content:center; padding:12px; }
+
+  .tut-section{ margin-bottom:24px; }
+  .tut-section h3{ font-family:'Noto Serif TC',serif; font-size:15px; color:var(--gold-bright); margin:0 0 10px; }
+  .tut-section p{ font-size:13px; color:var(--ink-dim); line-height:1.7; margin:6px 0; }
+  .tut-formula{ text-align:center; font-weight:700; color:var(--ink); background:var(--panel-2); border:1px solid var(--line-soft); border-radius:10px; padding:10px; }
+
+  .tmb-trio{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin:14px 0; }
+  .tmb-item{ display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .tmb-caption{ font-size:11.5px; color:var(--ink-dim); display:flex; align-items:center; gap:6px; }
+  .tmb-grid{
+    display:grid; grid-template-columns:repeat(9, 12px); grid-template-rows:repeat(9,12px);
+    gap:2px; background:var(--panel-2); padding:6px; border-radius:8px; border:1px solid var(--line-soft);
+  }
+  .tmb-cell{ background:var(--bg-2); border-radius:2px; }
+  .tmb-cell.hi-row{ background:var(--vermillion); }
+  .tmb-cell.hi-col{ background:var(--p1); }
+  .tmb-cell.hi-region{ background:var(--gold); }
+  .tmb-swatch{ width:12px; height:12px; border-radius:3px; display:inline-block; }
+  .tmb-swatch.hi-row{ background:var(--vermillion); }
+  .tmb-swatch.hi-col{ background:var(--p1); }
+  .tmb-swatch.hi-region{ background:var(--gold); }
+
+  .tut-tiles{ display:flex; flex-wrap:wrap; gap:14px; }
+  .tut-tile-demo{ display:flex; align-items:center; gap:10px; background:var(--panel-2); border:1px solid var(--line-soft); border-radius:10px; padding:10px 14px; flex:1; min-width:150px; }
+  .tut-tile-demo span{ font-size:11.5px; color:var(--ink-dim); line-height:1.5; }
+  .tut-tile{
+    width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+    font-weight:900; font-size:15px; flex:none; border:1px solid var(--line);
+  }
+  .tut-tile.t-row{ background:rgba(193,70,47,.18); color:var(--vermillion); border-color:var(--vermillion); }
+  .tut-tile.t-col{ background:rgba(63,127,176,.18); color:var(--p1); border-color:var(--p1); }
+  .tut-tile.t-sym{ background:rgba(207,159,63,.18); color:var(--gold-bright); border-color:var(--gold); }
+  .tut-tile.t-wild{ background:rgba(141,107,181,.18); color:var(--p4); border-color:var(--p4); }
+
+  .tut-capture-demo{ display:flex; align-items:center; justify-content:center; gap:18px; margin:14px 0; }
+  .cap-before, .cap-after{ display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .cap-tile{ width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900; border:2px solid var(--line); }
+  .cap-tile.opp{ background:rgba(63,127,176,.25); color:var(--p1); border-color:var(--p1); }
+  .cap-tile.me{ background:rgba(193,70,47,.25); color:var(--vermillion); border-color:var(--vermillion); }
+  .cap-label{ font-size:11px; color:var(--ink-faint); }
+  .cap-arrow{ font-size:22px; color:var(--gold-bright); }
 
   /* ---------- Setup screen ---------- */
   .setup-wrap{flex:1; display:flex; align-items:center; justify-content:center; padding:32px 16px;}
@@ -413,6 +511,7 @@ function shuffle(arr){
 
 /* ===================== 狀態 ===================== */
 let state = null; // set on start
+let uiScreen = 'start'; // 'start' → 'setup'(遊戲大廳) → 交由 state.screen 接手
 let setupCfg = {
   total: 4,
   humanCount: 1, // 前 humanCount 位為玩家（簡化：可各自切換）
@@ -754,70 +853,15 @@ function applyMusicVolume(){
   gameMusic.volume = musicVolume;
 }
 
-/* ---- 共用的音樂／音效／全螢幕控制列（點圖示才展開音量滑桿） ---- */
-let musicPanelOpen = false;
-let sfxPanelOpen = false;
-
+/* ---- 共用的頂部工具列（現在只保留設定鍵，音樂／音效／全螢幕都收進設定視窗） ---- */
 function topBtnsHtml(){
   return `
-    <div class="audio-ctrl">
-      <button class="ibtn icon-only" data-act="music" title="${musicOn?'關閉音樂':'開啟音樂'}${(musicMissing.lobby && musicMissing.game)?'（找不到 lobby.mp3 / game.mp3）':''}">${musicOn?'🎵':'🔇'}</button>
-      <div class="vol-popover ${musicPanelOpen?'open':''}">
-        <input type="range" class="vol-slider" data-act="musicVol" min="0" max="100" value="${Math.round(musicVolume*100)}" title="音樂音量">
-      </div>
-    </div>
-    <div class="audio-ctrl">
-      <button class="ibtn icon-only" data-act="sound" title="${sfxOn?'關閉音效':'開啟音效'}">${sfxOn?'🔊':'🔇'}</button>
-      <div class="vol-popover ${sfxPanelOpen?'open':''}">
-        <input type="range" class="vol-slider" data-act="sfxVol" min="0" max="100" value="${Math.round(sfxVolume*100)}" title="音效音量">
-      </div>
-    </div>
-    <button class="ibtn icon-only" data-act="fullscreen" title="${document.fullscreenElement?'退出全螢幕':'全螢幕'}">⛶</button>
+    <button class="ibtn icon-only" data-act="settings" title="設定與教學">⚙️</button>
   `;
 }
 function wireTopBtns(container){
-  const musicBtn = container.querySelector('[data-act="music"]');
-  const sfxBtn = container.querySelector('[data-act="sound"]');
-
-  // 點圖示：展開／收合音量調整鈕（不直接靜音）
-  musicBtn.addEventListener('click', (e)=>{
-    e.stopPropagation();
-    musicPanelOpen = !musicPanelOpen;
-    sfxPanelOpen = false;
-    sfxUI();
-    render();
-  });
-  sfxBtn.addEventListener('click', (e)=>{
-    e.stopPropagation();
-    sfxPanelOpen = !sfxPanelOpen;
-    musicPanelOpen = false;
-    render();
-    sfxUI();
-  });
-  container.querySelector('[data-act="fullscreen"]').addEventListener('click', ()=>{ sfxUI(); toggleFullscreen(); });
-
-  // 拉到 0 ＝靜音，大於 0 ＝取消靜音；拖曳過程中不整頁重繪，避免滑桿被中斷
-  container.querySelector('[data-act="musicVol"]').addEventListener('input', (e)=>{
-    musicVolume = parseInt(e.target.value,10)/100;
-    musicOn = musicVolume>0;
-    applyMusicVolume();
-    syncMusic(true);
-    musicBtn.textContent = musicOn?'🎵':'🔇';
-  });
-  container.querySelector('[data-act="sfxVol"]').addEventListener('input', (e)=>{
-    sfxVolume = parseInt(e.target.value,10)/100;
-    sfxOn = sfxVolume>0;
-    sfxBtn.textContent = sfxOn?'🔊':'🔇';
-  });
-  container.querySelector('[data-act="sfxVol"]').addEventListener('change', ()=>{ if(sfxOn) sfxUI(); });
+  container.querySelector('[data-act="settings"]').addEventListener('click', ()=>{ sfxUI(); openSettingsModal(); });
 }
-// 點擊面板以外的地方時，自動收合音量調整鈕
-document.addEventListener('click', (e)=>{
-  if(!musicPanelOpen && !sfxPanelOpen) return;
-  if(e.target.closest && e.target.closest('.audio-ctrl')) return;
-  musicPanelOpen = false; sfxPanelOpen = false;
-  render();
-});
 
 let activeMusicTrack = null; // 'lobby' | 'game' | null
 function syncMusic(force){
@@ -846,13 +890,185 @@ document.addEventListener('click', function unlockAudio(){
 }, {capture:true});
 
 
+/* ===================== 設定視窗（音量／全螢幕／圖文教學） ===================== */
+let settingsTab = 'audio'; // 'audio' | 'tutorial'
+
+function openSettingsModal(){
+  const div = document.createElement('div');
+  div.className = 'modal-bg';
+  div.innerHTML = `
+    <div class="modal settings-modal">
+      <div class="settings-head">
+        <h2>設定</h2>
+        <button class="modal-close" data-act="close">✕</button>
+      </div>
+      <div class="settings-tabs">
+        <button class="settings-tab ${settingsTab==='audio'?'active':''}" data-tab="audio">🔊 音量與畫面</button>
+        <button class="settings-tab ${settingsTab==='tutorial'?'active':''}" data-tab="tutorial">📖 遊戲教學</button>
+      </div>
+      <div class="settings-body" id="settingsBody">${settingsTab==='audio' ? settingsAudioHtml() : settingsTutorialHtml()}</div>
+    </div>
+  `;
+  document.body.appendChild(div);
+  wireSettingsModal(div);
+}
+
+function settingsAudioHtml(){
+  return `
+    <div class="vol-row">
+      <span class="vol-label">🎵 音樂音量</span>
+      <input type="range" class="vol-slider wide" data-act="s-musicVol" min="0" max="100" value="${Math.round(musicVolume*100)}">
+      <span class="vol-val">${Math.round(musicVolume*100)}%</span>
+    </div>
+    <div class="vol-row">
+      <span class="vol-label">🔊 音效音量</span>
+      <input type="range" class="vol-slider wide" data-act="s-sfxVol" min="0" max="100" value="${Math.round(sfxVolume*100)}">
+      <span class="vol-val">${Math.round(sfxVolume*100)}%</span>
+    </div>
+    <div class="settings-divider"></div>
+    <button class="ibtn settings-fs-btn" data-act="s-fullscreen">${document.fullscreenElement?'⛶ 退出全螢幕':'⛶ 進入全螢幕'}</button>
+  `;
+}
+
+function tutMiniBoardHtml(kind){
+  // kind: 'row' | 'col' | 'region' — 各自畫一張獨立的棋盤示意圖
+  let cells = '';
+  for(let r=0;r<9;r++){
+    for(let c=0;c<9;c++){
+      const reg = regionIndex(r,c);
+      let hi = false;
+      if(kind==='row' && r===0) hi = true;
+      if(kind==='col' && c===4) hi = true;
+      if(kind==='region' && reg===4) hi = true;
+      cells += `<div class="tmb-cell${hi?' hi-'+kind:''}"></div>`;
+    }
+  }
+  return `<div class="tmb-grid">${cells}</div>`;
+}
+
+function settingsTutorialHtml(){
+  return `
+    <div class="tut-section">
+      <h3>1. 棋盤與方塊</h3>
+      <p>棋盤為 9×9 方格，橫排以字母 A–I、直列以數字 1–9 標示，並分成 9 個 3×3 區域，各有專屬符號。</p>
+      <div class="tmb-trio">
+        <div class="tmb-item">
+          ${tutMiniBoardHtml('row')}
+          <div class="tmb-caption"><span class="tmb-swatch hi-row"></span>橫排 A（row 方塊）</div>
+        </div>
+        <div class="tmb-item">
+          ${tutMiniBoardHtml('col')}
+          <div class="tmb-caption"><span class="tmb-swatch hi-col"></span>直列 5（col 方塊）</div>
+        </div>
+        <div class="tmb-item">
+          ${tutMiniBoardHtml('region')}
+          <div class="tmb-caption"><span class="tmb-swatch hi-region"></span>★ 星區（sym 方塊）</div>
+        </div>
+      </div>
+    </div>
+    <div class="tut-section">
+      <h3>2. 你的手牌</h3>
+      <div class="tut-tiles">
+        <div class="tut-tile-demo"><div class="tut-tile t-row">A</div><span>橫排方塊<br>只能放在對應橫排</span></div>
+        <div class="tut-tile-demo"><div class="tut-tile t-col">5</div><span>直列方塊<br>只能放在對應直列</span></div>
+        <div class="tut-tile-demo"><div class="tut-tile t-sym">★</div><span>區域方塊<br>只能放在對應區域</span></div>
+        <div class="tut-tile-demo"><div class="tut-tile t-wild">特</div><span>百搭方塊<br>可放任意空格</span></div>
+      </div>
+      <p>每人持有橫排、直列、區域方塊各 9 個，加上百搭方塊 1 個，共 28 個；每回合從手上 5 個方塊中選 1 個放置，再補回一張。</p>
+    </div>
+    <div class="tut-section">
+      <h3>3. 奪取對手</h3>
+      <div class="tut-capture-demo">
+        <div class="cap-before"><div class="cap-tile opp">▲</div><div class="cap-label">對手方塊</div></div>
+        <div class="cap-arrow">→</div>
+        <div class="cap-after"><div class="cap-tile me">▲</div><div class="cap-label">你的合法方塊取代</div></div>
+      </div>
+      <p>只要你手上有能合法放進該格的方塊，就能取代對手的棋子。<b>但前提是：</b>取代後不能把對方原本相連的一整群拆成兩群以上。</p>
+    </div>
+    <div class="tut-section">
+      <h3>4. 結束與計分</h3>
+      <p>當所有玩家手牌都剩 4 張（含）以下時，對局立即結束並結算：</p>
+      <p class="tut-formula">總分　＝　你的「群組數」　＋　被你奪取最多的「單一顏色數量」</p>
+      <p>總分最少者獲勝；平手則比較奪取總數，越少越好。</p>
+    </div>
+  `;
+}
+
+function wireSettingsModal(div){
+  div.addEventListener('click', (e)=>{ if(e.target===div){ sfxUI(); document.body.removeChild(div); } });
+  div.querySelector('[data-act="close"]').addEventListener('click', ()=>{ sfxUI(); document.body.removeChild(div); });
+  div.querySelectorAll('.settings-tab').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      sfxUI();
+      settingsTab = btn.dataset.tab;
+      div.querySelectorAll('.settings-tab').forEach(b=>b.classList.toggle('active', b===btn));
+      const body = div.querySelector('#settingsBody');
+      body.innerHTML = settingsTab==='audio' ? settingsAudioHtml() : settingsTutorialHtml();
+      if(settingsTab==='audio') wireSettingsAudio(div);
+    });
+  });
+  if(settingsTab==='audio') wireSettingsAudio(div);
+}
+
+function wireSettingsAudio(div){
+  const mSlider = div.querySelector('[data-act="s-musicVol"]');
+  const sSlider = div.querySelector('[data-act="s-sfxVol"]');
+  if(mSlider) mSlider.addEventListener('input', (e)=>{
+    musicVolume = parseInt(e.target.value,10)/100;
+    musicOn = musicVolume>0;
+    applyMusicVolume(); syncMusic(true);
+    e.target.nextElementSibling.textContent = Math.round(musicVolume*100)+'%';
+  });
+  if(sSlider) sSlider.addEventListener('input', (e)=>{
+    sfxVolume = parseInt(e.target.value,10)/100;
+    sfxOn = sfxVolume>0;
+    e.target.nextElementSibling.textContent = Math.round(sfxVolume*100)+'%';
+  });
+  if(sSlider) sSlider.addEventListener('change', ()=>{ if(sfxOn) sfxUI(); });
+  const fsBtn = div.querySelector('[data-act="s-fullscreen"]');
+  if(fsBtn) fsBtn.addEventListener('click', ()=>{
+    sfxUI();
+    toggleFullscreen();
+    setTimeout(()=>{ fsBtn.textContent = document.fullscreenElement?'⛶ 退出全螢幕':'⛶ 進入全螢幕'; }, 150);
+  });
+}
+
 /* ===================== 渲染 ===================== */
 const app = document.getElementById('app');
 
 function render(){
+  if(uiScreen==='start'){ renderStartScreen(); return; }
   if(!state){ renderSetup(); return; }
   if(state.screen==='game') renderGame();
   else if(state.screen==='end') renderGame(true);
+}
+
+/* ---- Start screen ---- */
+function renderStartScreen(){
+  app.innerHTML = `
+    <div class="start-wrap">
+      <div class="start-card">
+        <div class="glyphs">${REGION_SYMS.map(s=>`<span>${s}</span>`).join('')}</div>
+        <div class="start-mark">爆</div>
+        <h1>大爆格</h1>
+        <div class="tag">CONNECT · CAPTURE · CONTROL</div>
+        <p class="start-desc">把你的方塊連成一片，同時提防對手的搶奪 —<br>邏輯與心理的九宮對局</p>
+        <button class="start-hero-btn" data-act="enter">▶ 點擊開始遊戲</button>
+        <div class="start-hint">開始後將自動進入全螢幕，並開啟背景音樂與音效（可隨時於「設定」中調整）</div>
+      </div>
+    </div>
+  `;
+  app.querySelector('[data-act="enter"]').addEventListener('click', ()=>{
+    musicOn = true; sfxOn = true;
+    if(sfxVolume<=0) sfxVolume = 0.8;
+    if(musicVolume<=0) musicVolume = 0.38;
+    applyMusicVolume();
+    enterFullscreen();
+    uiScreen = 'setup';
+    render();
+    syncMusic(true);
+    sfxUI();
+  });
 }
 
 /* ---- Setup screen ---- */
@@ -889,6 +1105,7 @@ function renderSetup(){
     <div class="setup-wrap">
       <div class="setup-card">
         <div class="setup-hero">
+          <div class="lobby-badge">遊戲大廳</div>
           <div class="glyphs">${REGION_SYMS.map(s=>`<span>${s}</span>`).join('')}</div>
           <h2>大爆格</h2>
           <p>把你的方塊連成一片，同時提防對手的搶奪 — 邏輯與心理的九宮對局</p>
